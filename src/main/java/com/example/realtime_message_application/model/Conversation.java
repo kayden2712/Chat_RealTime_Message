@@ -39,7 +39,7 @@ import lombok.Setter;
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long conversationId;
 
     @Enumerated(EnumType.STRING)
     private conversationType type;

@@ -20,7 +20,7 @@ import lombok.Setter;
 public class ReadReceipt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long readReceiptId;
 
     @ManyToOne
     @JoinColumn(name = "message_id", nullable = false)

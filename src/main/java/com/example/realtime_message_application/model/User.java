@@ -30,7 +30,7 @@ import lombok.Setter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -39,7 +39,7 @@ public class User {
     private String password;
 
     @Column(nullable = false, unique = true)
-    private String phoneNumber;
+    private String phoneNo;
 
     @Column(nullable = false, unique = true)
     private String email;

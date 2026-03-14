@@ -17,7 +17,7 @@ import lombok.Setter;
 public class Block {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long blockId;
 
     @ManyToOne
     @JoinColumn(name = "blocker_id", nullable = false)

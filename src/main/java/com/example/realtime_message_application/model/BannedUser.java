@@ -23,7 +23,7 @@ import lombok.Setter;
 public class BannedUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long bannedUserId;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id")
