@@ -112,11 +112,11 @@ public class UserServiceImpl implements UserService {
         user.setBio(userBio.getNewBio());
     }
 
-    public User convertToUser(UserDTO userDTO, User user) {
+    private User convertToUser(UserDTO userDTO, User user) {
         return userMapper.applyUser(user, userDTO);
     }
 
-    public UserResponse convertToUserResponse(User user) {
+    private UserResponse convertToUserResponse(User user) {
         String lastSeen = user.isOnline() ? "Online" : lastSeenHelper(user);
         return userMapper.toResponse(user, lastSeen);
     }
