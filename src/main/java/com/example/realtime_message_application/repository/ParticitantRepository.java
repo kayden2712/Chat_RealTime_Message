@@ -17,44 +17,44 @@ import com.example.realtime_message_application.model.User;
 @Repository
 public interface ParticitantRepository extends JpaRepository<ConversationParticipant, Long> {
 
-    @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
-    List<ConversationParticipant> findByConversationId(@Param("conversationId") Long conversationId);
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
+        List<ConversationParticipant> findByConversationId(@Param("conversationId") Long conversationId);
 
-    @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId")
-    Optional<ConversationParticipant> findByUserId(@Param("userId") Long userId);
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId")
+        Optional<ConversationParticipant> findByUserId(@Param("userId") Long userId);
 
-    Optional<ConversationParticipant> findByConversationAndUser(Conversation conversation, User user);
+        Optional<ConversationParticipant> findByConversationAndUser(Conversation conversation, User user);
 
-    @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
-    Set<ConversationParticipant> findAllParticipantsByConversationId(@Param("conversationId") Long conversationId);
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
+        Set<ConversationParticipant> findAllParticipantsByConversationId(@Param("conversationId") Long conversationId);
 
-    @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
-    ConversationParticipant findByConversation_ConversationIdAndUser_UserId(
-            @Param("conversationId") Long conversationId,
-            @Param("userId") Long userId);
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
+        ConversationParticipant findByConversation_ConversationIdAndUser_UserId(
+                        @Param("conversationId") Long conversationId,
+                        @Param("userId") Long userId);
 
-    @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = :role")
-    Long countNoOfAdminsInConversation(
-            @Param("conversationId") Long conversationId,
-            @Param("role") ParticipantRole role);
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = :role")
+        Long countNoOfAdminsInConversation(
+                        @Param("conversationId") Long conversationId,
+                        @Param("role") ParticipantRole role);
 
-    @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = 'ADMIN'")
-    Long countNoOfAdminsInConv(@Param("conversationId") Long conversationId);
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = 'ADMIN'")
+        Long countNoOfAdminsInConv(@Param("conversationId") Long conversationId);
 
-    @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
-    Long countNoOfParticipantsInConv(@Param("conversationId") Long conversationId);
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
+        Long countNoOfParticipantsInConv(@Param("conversationId") Long conversationId);
 
-    @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = 'MEMBER'")
-    Long countNoOfMembersInConv(@Param("conversationId") Long conversationId);
-    
-    @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId AND p.isFavorite = true")
-    List<ConversationParticipant> findAllFavoriteByUserId(@Param("userId") Long userId);
-    
-    @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId AND p.isArchived = true")
-    List<ConversationParticipant> findAllArchivedByUserId(@Param("userId") int userId);
-    
-    @Query("DELETE FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
-    void deleteByConversation_ConversationIdAndUser_UserId(
-            @Param("conversationId") int conversationId,
-            @Param("userId") int userId);
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = 'MEMBER'")
+        Long countNoOfMembersInConv(@Param("conversationId") Long conversationId);
+
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId AND p.isFavorite = true")
+        List<ConversationParticipant> findAllFavoriteByUserId(@Param("userId") Long userId);
+
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId AND p.isArchived = true")
+        List<ConversationParticipant> findAllArchivedByUserId(@Param("userId") int userId);
+
+        @Query("DELETE FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
+        void deleteByConversation_ConversationIdAndUser_UserId(
+                        @Param("conversationId") int conversationId,
+                        @Param("userId") int userId);
 }
