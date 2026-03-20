@@ -1,6 +1,6 @@
 package com.example.realtime_message_application.enums;
 
-public enum conversationType {
+public enum ConversationType {
     PRIVATE,
     GROUP;
 }
