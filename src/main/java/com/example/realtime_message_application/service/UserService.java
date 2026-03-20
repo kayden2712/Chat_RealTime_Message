@@ -1,4 +1,4 @@
-package com.example.realtime_message_application.service.user;
+package com.example.realtime_message_application.service;
 
 import java.util.List;
 
@@ -6,6 +6,7 @@ import com.example.realtime_message_application.dto.user.UserDTO;
 import com.example.realtime_message_application.dto.user.UserResponse;
 import com.example.realtime_message_application.dto.user.updateBio;
 import com.example.realtime_message_application.dto.user.updateProfilePic;
+import com.example.realtime_message_application.model.User;
 
 public interface UserService {
 
@@ -31,4 +32,7 @@ public interface UserService {
 
     void updateBio(updateBio userBio);
 
+    User getEntityByUserId(Long userId);
+
+    boolean isExists(Long userId);
 }

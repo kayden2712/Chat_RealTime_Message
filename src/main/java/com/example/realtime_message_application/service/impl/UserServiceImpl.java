@@ -1,4 +1,4 @@
-package com.example.realtime_message_application.service.user.impl;
+package com.example.realtime_message_application.service.impl;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -17,7 +17,7 @@ import com.example.realtime_message_application.dto.user.updateProfilePic;
 import com.example.realtime_message_application.mapper.UserMapper;
 import com.example.realtime_message_application.model.User;
 import com.example.realtime_message_application.repository.UserRepository;
-import com.example.realtime_message_application.service.user.UserService;
+import com.example.realtime_message_application.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,16 +29,19 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream().map(this::convertToUserResponse).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getUserById(Long userId) {
-        return convertToUserResponse(findUserById(userId));
+        return convertToUserResponse(getEntityByUserId(userId));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse findByUsername(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
@@ -48,11 +51,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponse> findByPhoneNo(String phoneNo) {
         return userRepository.findByPhoneNo(phoneNo).stream().map(this::convertToUserResponse).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponse> findByKeyword(String keyword) {
         return userRepository.findByKeyword(keyword).stream().map(this::convertToUserResponse).toList();
     }
@@ -67,7 +72,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse updateUser(Long userId, UserDTO userDTO) {
-        User user = findUserById(userId);
+        User user = getEntityByUserId(userId);
         validateUser(userDTO);
         user = convertToUser(userDTO, user);
         return convertToUserResponse(user);
@@ -86,7 +91,7 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(userId)) {
             throw new RuntimeException("User not found");
         }
-        User user = findUserById(userId);
+        User user = getEntityByUserId(userId);
         user.setOnline(false);
         user.setLastSeen(Instant.now());
         userRepository.save(user);
@@ -94,7 +99,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateProfPic(updateProfilePic updatePic) {
-        User user = findUserById(updatePic.getUserId());
+        User user = getEntityByUserId(updatePic.getUserId());
         try {
             if (updatePic.getFile() != null && !updatePic.getFile().isEmpty()) {
                 user.setProfilePicName(updatePic.getFile().getOriginalFilename());
@@ -108,8 +113,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateBio(updateBio userBio) {
-        User user = findUserById(userBio.getUserId());
+        User user = getEntityByUserId(userBio.getUserId());
         user.setBio(userBio.getNewBio());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User getEntityByUserId(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public boolean isExists(Long userId) {
+        return userRepository.existsById(userId);
     }
 
     private User convertToUser(UserDTO userDTO, User user) {
@@ -159,7 +175,4 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User findUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-    }
 }
