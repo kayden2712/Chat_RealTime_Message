@@ -10,12 +10,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.realtime_message_application.enums.ParticipantRole;
-import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
-import com.example.realtime_message_application.model.User;
 
 @Repository
-public interface ParticitantRepository extends JpaRepository<ConversationParticipant, Long> {
+public interface ParticipantRepository extends JpaRepository<ConversationParticipant, Long> {
 
         @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
         List<ConversationParticipant> findByConversationId(@Param("conversationId") Long conversationId);
@@ -23,15 +21,12 @@ public interface ParticitantRepository extends JpaRepository<ConversationPartici
         @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId")
         Optional<ConversationParticipant> findByUserId(@Param("userId") Long userId);
 
-        Optional<ConversationParticipant> findByConversationAndUser(Conversation conversation, User user);
+        @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
+        Optional<ConversationParticipant> findByConversationAndUser(@Param("conversationId") Long conversationId,
+                        @Param("userId") Long userId);
 
         @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
         Set<ConversationParticipant> findAllParticipantsByConversationId(@Param("conversationId") Long conversationId);
-
-        @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
-        ConversationParticipant findByConversation_ConversationIdAndUser_UserId(
-                        @Param("conversationId") Long conversationId,
-                        @Param("userId") Long userId);
 
         @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = :role")
         Long countNoOfAdminsInConversation(
@@ -51,10 +46,11 @@ public interface ParticitantRepository extends JpaRepository<ConversationPartici
         List<ConversationParticipant> findAllFavoriteByUserId(@Param("userId") Long userId);
 
         @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId AND p.isArchived = true")
-        List<ConversationParticipant> findAllArchivedByUserId(@Param("userId") int userId);
+        List<ConversationParticipant> findAllArchivedByUserId(@Param("userId") Long userId);
 
         @Query("DELETE FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
         void deleteByConversation_ConversationIdAndUser_UserId(
-                        @Param("conversationId") int conversationId,
-                        @Param("userId") int userId);
+                        @Param("conversationId") Long conversationId,
+                        @Param("userId") Long userId);
+
 }

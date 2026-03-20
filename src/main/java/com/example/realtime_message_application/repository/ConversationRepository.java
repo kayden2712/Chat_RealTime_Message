@@ -16,6 +16,9 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
         @Query("SELECT c FROM Conversation c WHERE LOWER(c.title) LIKE LOWER(CONCAT('%', :title, '%'))")
         List<Conversation> findByConversationName(@Param("title") String title);
 
+        @Query("SELECT c FROM Conversation c JOIN c.participants p WHERE p.user.userId = :userId")
+        List<Conversation> findAllConversationsByUserId(@Param("userId") Long userId);
+
         @Query("SELECT m.messageId FROM Conversation c JOIN c.messages m WHERE c.conversationId = :conversationId")
         List<Integer> findALLMessageIdsOfThisConversationId(@Param("conversationId") Long conversationId);
 
@@ -28,7 +31,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
                         "WHERE c.conversationType = 'PRIVATE' " +
                         "AND SIZE(c.participants) = 1 " +
                         "AND p.user.userId = :userId")
-        Optional<Conversation> findSelfConversation(@Param("userId") int userId);
+        Optional<Conversation> findSelfConversation(@Param("userId") Long userId);
 
         // GROUP 2 MEMBER
         @Query("SELECT c FROM Conversation c " +
@@ -38,6 +41,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
                         "AND SIZE(c.participants) = 2 " +
                         "AND p1.user.userId = :userId1 " +
                         "AND p2.user.userId = :userId2")
-        Optional<Conversation> findPrivateConvBetweenTwoUsers(@Param("userId1") int userId1,
-                        @Param("userId2") int userId2);
+        Optional<Conversation> findPrivateConvBetweenTwoUsers(@Param("userId1") Long userId1,
+                        @Param("userId2") Long userId2);
 }

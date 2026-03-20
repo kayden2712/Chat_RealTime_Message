@@ -22,35 +22,35 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
                         "LEFT JOIN FETCH m.sender s " +
                         "LEFT JOIN FETCH m.replyTo r " +
                         "WHERE m.messageId = :messageId")
-        Optional<Message> findByMessageIdWithDetails(@Param("messageId") int messageId);
+        Optional<Message> findByMessageIdWithDetails(@Param("messageId") Long messageId);
 
         @Query("SELECT m FROM Message m WHERE m.conversation.conversationId = :conversationId")
         Page<Message> findByConversationId(Integer conversationId, Pageable pageable);
 
         @Query("SELECT m FROM Message m WHERE m.conversation.conversationId = :conversationId")
-        List<Message> findAllMessagesByConversationId(@Param("conversationId") int conversationId);
+        List<Message> findAllMessagesByConversationId(@Param("conversationId") Long conversationId);
 
         @Modifying
         @Query(value = "DELETE FROM Message m WHERE m.message_id = :messageId", nativeQuery = true)
-        void permanentDeletionOfMessage(@Param("messageId") int messageId);
+        void permanentDeletionOfMessage(@Param("messageId") Long messageId);
 
         @Query(value = "SELECT * FROM Message m " +
                         "WHERE m.message_id = :messageId " +
                         "AND m.is_deleted = true", nativeQuery = true)
-        Optional<Message> findDeletedMessage(@Param("messageId") int messageId);
+        Optional<Message> findDeletedMessage(@Param("messageId") Long messageId);
 
         @Query("SELECT m FROM Message m " +
                         "LEFT JOIN m.sender " +
                         "WHERE m.replyTo.messageId = :messageId ")
-        Page<Message> findReplies(@Param("messageId") int messageId, Pageable pageable);
+        Page<Message> findReplies(@Param("messageId") Long messageId, Pageable pageable);
 
         @Query("SELECT m FROM Message m " +
                         "LEFT JOIN m.replies r " +
                         "WHERE m.replyTo.messageId = :messageId AND m.isDeleted = false")
-        List<Message> findMessageReplies(@Param("messageId") int messageId);
+        List<Message> findMessageReplies(@Param("messageId") Long messageId);
 
         @Query("SELECT m FROM Message m LEFT JOIN FETCH m.replies WHERE m.messageId = :messageId")
-        Message findMessageByIdWithReplies(@Param("messageId") int messageId);
+        Message findMessageByIdWithReplies(@Param("messageId") Long messageId);
 
         // Query for finding all message Ids that do have replies but not replying to
         // any message in a conversation
@@ -59,14 +59,17 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         @Query("SELECT m.messageId FROM Message m LEFT JOIN m.replyTo " +
                         "WHERE m.conversation.conversationId = :conversationId " +
                         "AND m.replyTo IS NULL")
-        List<Integer> findAllMessagesWithNoReplyInConv(@Param("conversationId") int conversationId);
+        List<Integer> findAllMessagesWithNoReplyInConv(@Param("conversationId") Long conversationId);
 
         @Query("SELECT m FROM Message m " +
                         "LEFT JOIN m.conversation c " +
                         "WHERE m.conversation.conversationId = :conversationId " +
                         "AND m.pinned = true")
-        List<Message> findPinnedMessagesInConv(@Param("conversationId") int conversationId);
+        List<Message> findPinnedMessagesInConv(@Param("conversationId") Long conversationId);
 
         @Query("SELECT m FROM Message m WHERE m.expiresAt <= :now")
         List<Message> findExpiredMessages(@Param("now") LocalDateTime now);
+
+        @Query("SELECT m FROM Message m WHERE m.conversation.conversationId = :conversationId ORDER BY m.createdAt DESC LIMIT 1")
+        Message findLastMessageInConv(@Param("conversationId") Long conversationId);
 }
