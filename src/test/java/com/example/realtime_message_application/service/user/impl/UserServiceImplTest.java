@@ -22,6 +22,7 @@ import com.example.realtime_message_application.dto.user.updateBio;
 import com.example.realtime_message_application.mapper.UserMapper;
 import com.example.realtime_message_application.model.User;
 import com.example.realtime_message_application.repository.UserRepository;
+import com.example.realtime_message_application.service.impl.UserServiceImpl;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
