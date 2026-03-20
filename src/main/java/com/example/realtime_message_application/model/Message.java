@@ -32,6 +32,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,6 +44,7 @@ import lombok.ToString;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @ToString(exclude = {"conversation","sender","replyTo","replies"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @FilterDef(name = "deletedMessageFilter", parameters = @ParamDef(name = "isDeleted", type = Boolean.class))
@@ -86,7 +88,6 @@ public class Message {
     //soft delete
     @SQLDelete(sql = "UPDATE Message SET is_deleted = true WHERE message_id = ?")
     private boolean isDeleted = false;
-    private String deletedBy;
 
     private LocalDateTime expiresAt;
 

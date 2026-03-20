@@ -63,8 +63,4 @@ public class User {
     @JsonIgnore
     private Set<ConversationParticipant> participants = new HashSet<>();
 
-    public User orElseThrow(Object object) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'orElseThrow'");
-    }
 }

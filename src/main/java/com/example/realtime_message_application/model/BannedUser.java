@@ -16,7 +16,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -31,9 +32,12 @@ public class BannedUser {
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     private User user;
-
-    private Instant bannedAt;
     private String bannedBy;
     private String reason;
+
+    @Builder.Default
+    private Instant bannedAt = Instant.now();
+
+    @Builder.Default
     private boolean permanently = true;
 }

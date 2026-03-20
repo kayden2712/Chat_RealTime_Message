@@ -10,7 +10,7 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
 import com.esotericsoftware.kryo.serializers.FieldSerializer.NotNull;
-import com.example.realtime_message_application.enums.conversationType;
+import com.example.realtime_message_application.enums.ConversationType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -27,6 +27,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -36,13 +37,14 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Conversation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long conversationId;
 
     @Enumerated(EnumType.STRING)
-    private conversationType type;
+    private ConversationType type;
 
     private String title;
     private String description;
@@ -53,12 +55,14 @@ public class Conversation {
     @NotNull
     private User creator;
 
+    @Builder.Default
     private Instant createdAt = Instant.now();
 
     private String avatarUrl;
 
-    private boolean disapperingMsg = false;
-    private int msgExpiryInDays;
+    @Builder.Default
+    private boolean disappearing = false;
+    private int expiryInDays;
 
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonBackReference
@@ -69,4 +73,8 @@ public class Conversation {
     @JsonManagedReference
     private Set<ConversationParticipant> participants = new HashSet<>();
     
+    public void updateDisappearingSettings(boolean enabled, int days) {
+    this.disappearing = enabled;
+    this.expiryInDays = enabled ? days : 0;
+}
 }
