@@ -17,6 +17,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,6 +27,7 @@ import lombok.Setter;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class ConversationParticipant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,9 +54,12 @@ public class ConversationParticipant {
     @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     private User addedBy;
 
+    @Builder.Default
     private boolean isMuted = false;
+    @Builder.Default
     private boolean isFavorite = false;
+    @Builder.Default
     private boolean isArchived = false;
-
+    @Builder.Default
     private Instant joinedOn = Instant.now();
 }
