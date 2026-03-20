@@ -18,7 +18,7 @@ import com.example.realtime_message_application.dto.user.UserDTO;
 import com.example.realtime_message_application.dto.user.UserResponse;
 import com.example.realtime_message_application.dto.user.updateBio;
 import com.example.realtime_message_application.dto.user.updateProfilePic;
-import com.example.realtime_message_application.service.user.UserService;
+import com.example.realtime_message_application.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 
