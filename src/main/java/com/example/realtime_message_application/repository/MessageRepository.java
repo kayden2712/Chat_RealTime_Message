@@ -25,7 +25,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
         Optional<Message> findByMessageIdWithDetails(@Param("messageId") Long messageId);
 
         @Query("SELECT m FROM Message m WHERE m.conversation.conversationId = :conversationId")
-        Page<Message> findByConversationId(Integer conversationId, Pageable pageable);
+        Page<Message> findByConversationId(@Param("conversationId") Long conversationId, Pageable pageable);
 
         @Query("SELECT m FROM Message m WHERE m.conversation.conversationId = :conversationId")
         List<Message> findAllMessagesByConversationId(@Param("conversationId") Long conversationId);

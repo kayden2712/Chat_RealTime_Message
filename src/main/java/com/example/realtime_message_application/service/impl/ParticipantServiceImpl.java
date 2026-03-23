@@ -16,13 +16,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class ParticipantServiceImpl implements ParticipantService {
-    private final ParticipantRepository particitantRepository;
+    private final ParticipantRepository participantRepository;
     private final ConversationMapper conversationMapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<ParticipantResponse> getAllParticipantsInConv(Long conversationId) {
-        return particitantRepository.findAllParticipantsByConversationId(conversationId)
+        return participantRepository.findAllParticipantsByConversationId(conversationId)
                 .stream().map(conversationMapper::toParticipantResponse)
                 .toList();
     }
@@ -30,13 +30,18 @@ public class ParticipantServiceImpl implements ParticipantService {
     @Override
     @Transactional(readOnly = true)
     public Long getAdminsCountInConv(Long conversationId) {
-        return particitantRepository.countNoOfAdminsInConv(conversationId);
+        return participantRepository.countNoOfAdminsInConv(conversationId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public Long getMembersCountInConv(Long conversationId) {
-        return particitantRepository.countNoOfMembersInConv(conversationId);
+        return participantRepository.countNoOfMembersInConv(conversationId);
+    }
+
+    @Override
+    public boolean isExists(Long conversationId, Long userId) {
+        return participantRepository.existsByConversationIdAndUserId(conversationId, userId);
     }
 
 }

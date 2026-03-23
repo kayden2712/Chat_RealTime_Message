@@ -12,4 +12,6 @@ public interface ParticipantService {
 
     Long getMembersCountInConv(Long conversationId);
 
+    boolean isExists(Long conversationId, Long userId);
+
 }

@@ -53,4 +53,9 @@ public interface ParticipantRepository extends JpaRepository<ConversationPartici
                         @Param("conversationId") Long conversationId,
                         @Param("userId") Long userId);
 
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.user.userId = :userId")
+        boolean existsByConversationIdAndUserId(
+                        @Param("conversationId") Long conversationId,
+                        @Param("userId") Long userId);
+
 }

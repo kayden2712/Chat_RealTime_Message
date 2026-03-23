@@ -69,8 +69,9 @@ public class Message {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User sender;
 
+    @Builder.Default
     @CreatedDate
-    private Instant createdAt;
+    private Instant createdAt = Instant.now();
     @LastModifiedDate
     private Instant editedAt;
 
@@ -87,11 +88,17 @@ public class Message {
 
     //soft delete
     @SQLDelete(sql = "UPDATE Message SET is_deleted = true WHERE message_id = ?")
+    @Builder.Default
     private boolean isDeleted = false;
+
+    private String deletedBy;
 
     private LocalDateTime expiresAt;
 
+    @Builder.Default
     private boolean pinned = false; //ghim
+
+    private String pinnedBy;
 
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
