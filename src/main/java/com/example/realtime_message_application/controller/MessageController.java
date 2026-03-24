@@ -58,8 +58,8 @@ public class MessageController {
     }
 
     @PostMapping("/edit")
-    public ResponseEntity<MessageResponse> editMessage(@RequestBody EditMessage editMessage) {
-        return ResponseEntity.ok(messageService.editMessageForActor(editMessage, editMessage.senderId()));
+    public ResponseEntity<MessageResponse> editMessage(@RequestBody EditMessage editMessage, @PathVariable Long actorId) {
+        return ResponseEntity.ok(messageService.editMessageForActor(editMessage, actorId));
     }
 
     @PostMapping("/delete")
