@@ -72,4 +72,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
         @Query("SELECT m FROM Message m WHERE m.conversation.conversationId = :conversationId ORDER BY m.createdAt DESC LIMIT 1")
         Message findLastMessageInConv(@Param("conversationId") Long conversationId);
+
+        @Query("SELECT COUNT(m) > 0 FROM Message m WHERE m.messageId = :messageId AND m.isDeleted = false")
+        boolean existsByMessageId(@Param("messageId") Long messageId);
 }
