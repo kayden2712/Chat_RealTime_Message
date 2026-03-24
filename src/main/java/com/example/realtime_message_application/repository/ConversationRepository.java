@@ -28,7 +28,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
         // GROUP 1 MEMBER
         @Query("SELECT c FROM Conversation c " +
                         "LEFT JOIN  c.participants p " +
-                        "WHERE c.conversationType = 'PRIVATE' " +
+                        "WHERE c.type = 'PRIVATE' " +
                         "AND SIZE(c.participants) = 1 " +
                         "AND p.user.userId = :userId")
         Optional<Conversation> findSelfConversation(@Param("userId") Long userId);
@@ -37,7 +37,7 @@ public interface ConversationRepository extends JpaRepository<Conversation, Long
         @Query("SELECT c FROM Conversation c " +
                         "JOIN c.participants p1 " +
                         "JOIN c.participants p2 " +
-                        "WHERE c.conversationType = 'PRIVATE' " +
+                        "WHERE c.type = 'PRIVATE' " +
                         "AND SIZE(c.participants) = 2 " +
                         "AND p1.user.userId = :userId1 " +
                         "AND p2.user.userId = :userId2")

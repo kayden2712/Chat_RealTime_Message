@@ -28,18 +28,18 @@ public interface ParticipantRepository extends JpaRepository<ConversationPartici
         @Query("SELECT p FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
         Set<ConversationParticipant> findAllParticipantsByConversationId(@Param("conversationId") Long conversationId);
 
-        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = :role")
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.participantRole = :role")
         Long countNoOfAdminsInConversation(
                         @Param("conversationId") Long conversationId,
                         @Param("role") ParticipantRole role);
 
-        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = 'ADMIN'")
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.participantRole = 'ADMIN'")
         Long countNoOfAdminsInConv(@Param("conversationId") Long conversationId);
 
         @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId")
         Long countNoOfParticipantsInConv(@Param("conversationId") Long conversationId);
 
-        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.role = 'MEMBER'")
+        @Query("SELECT COUNT(p) FROM ConversationParticipant p WHERE p.conversation.conversationId = :conversationId AND p.participantRole = 'MEMBER'")
         Long countNoOfMembersInConv(@Param("conversationId") Long conversationId);
 
         @Query("SELECT p FROM ConversationParticipant p WHERE p.user.userId = :userId AND p.isFavorite = true")

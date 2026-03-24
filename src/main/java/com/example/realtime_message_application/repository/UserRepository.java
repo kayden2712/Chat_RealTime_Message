@@ -8,12 +8,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.realtime_message_application.model.User;
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-        Optional<User> loadByUsername(String username);
+        @Query("SELECT u FROM User u WHERE u.username = :username")
+        Optional<User> loadByUsername(@Param("username") String username);
 
         @Query("SELECT u FROM User u " +
                         "WHERE LOWER(u.phoneNo) LIKE LOWER(CONCAT('%', :phoneNo, '%'))")
