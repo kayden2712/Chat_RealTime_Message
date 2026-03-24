@@ -34,5 +34,6 @@ public class ReadReceipt {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private Instant readAt;
+    @Builder.Default
+    private Instant readAt = Instant.now();
 }
