@@ -232,7 +232,7 @@ public class MessageServiceImpl implements MessageService {
 
         Message message = getMessageByIdWithDetails(editMessage.messageId());
 
-        if (message.getSender().getUserId() != editMessage.senderId()) {
+        if (!message.getSender().getUserId().equals(editMessage.senderId())) {
             throw new RuntimeException("You are not the sender of this message");
         }
 
