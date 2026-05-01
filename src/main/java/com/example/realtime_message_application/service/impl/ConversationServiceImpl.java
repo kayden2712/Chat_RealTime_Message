@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,12 +41,11 @@ import com.example.realtime_message_application.repository.ParticipantRepository
 import com.example.realtime_message_application.service.ConversationService;
 import com.example.realtime_message_application.service.UserService;
 
-import lombok.RequiredArgsConstructor;
 
 @Transactional
 @Service
-@RequiredArgsConstructor
 public class ConversationServiceImpl implements ConversationService {
+
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final ParticipantRepository participantRepository;
@@ -54,6 +54,25 @@ public class ConversationServiceImpl implements ConversationService {
     private final UserService userService;
     private final ConversationMapper conversationMapper;
     private final TaskScheduler taskScheduler;
+
+    public ConversationServiceImpl(
+            ConversationRepository conversationRepository,
+            MessageRepository messageRepository,
+            ParticipantRepository participantRepository,
+            BanRepository banRepository,
+            BlockRepository blockRepository,
+            UserService userService,
+            ConversationMapper conversationMapper,
+            @Qualifier("heartbeatScheduler") TaskScheduler taskScheduler) { // <--- Chỉ định đích danh
+        this.conversationRepository = conversationRepository;
+        this.messageRepository = messageRepository;
+        this.participantRepository = participantRepository;
+        this.banRepository = banRepository;
+        this.blockRepository = blockRepository;
+        this.userService = userService;
+        this.conversationMapper = conversationMapper;
+        this.taskScheduler = taskScheduler;
+    }
 
     @Override
     @Transactional(readOnly = true)

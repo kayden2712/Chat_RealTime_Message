@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.example.realtime_message_application.enums.MessageType;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Data;
 
@@ -16,6 +18,8 @@ public class MessageResponse {
     private final Long senderId;
     private final String senderName;
     private final String content;
+
+    @Enumerated(EnumType.STRING)
     private final MessageType messageType;
     private final Long replayToMessageId;
     private final String replayToContent;

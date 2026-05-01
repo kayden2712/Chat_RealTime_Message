@@ -2,7 +2,6 @@ package com.example.realtime_message_application.service.impl;
 
 import java.util.List;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import com.example.realtime_message_application.dto.conversation.BlockingCommand;

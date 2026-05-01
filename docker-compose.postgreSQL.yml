@@ -1,0 +1,42 @@
+services:
+  db-postgres:
+    image: postgres:18
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+  cache-redis:
+    image: redis:alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+
+  realtime-app:
+    build: .
+    container_name: realtimemessage-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db-postgres
+      - cache-redis
+    environment:
+      # Kết nối DB dùng biến env
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/${POSTGRES_DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      
+      # Redis dùng biến env
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      
+      # JWT dùng biến env
+      JWT_SECRET: ${JWT_SECRET_KEY}
+
+volumes:
+  postgres_data:

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.example.realtime_message_application.dto.conversation.ConversationDTO;
 import com.example.realtime_message_application.dto.conversation.ConversationResponse;
 import com.example.realtime_message_application.dto.conversation.ParticipantResponse;
 import com.example.realtime_message_application.model.Conversation;

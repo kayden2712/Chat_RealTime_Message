@@ -9,7 +9,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.example.realtime_message_application.security.JwtAuthenticationFilter;
-import com.nimbusds.jwt.JWT;
 
 import lombok.RequiredArgsConstructor;
 
