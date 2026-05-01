@@ -31,4 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
-.envsrc/main/resources/serviceAccountKey.json
+.env
+src/main/resources/serviceAccountKey.json
