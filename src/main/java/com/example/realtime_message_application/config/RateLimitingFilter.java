@@ -48,18 +48,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 response.setHeader("Retry-After", retryAt + " seconds");
                 response.getWriter().write("Rate limit exceeded, wait " + waitSec + " seconds");
                 return;
-
-            long waitSec = rateLimitingService.getSecondsUntilRefill(key);
-            log.warn("User {} is rate limited, wait {} seconds", userId, waitSec);
-
-            String retryAt = DateTimeFormatter.RFC_1123_DATE_TIME
-                    .format(ZonedDateTime.now().plusSeconds(waitSec));
-
-            response.setStatus(429);
-            response.setHeader("Retry-After", retryAt + " seconds");
-            response.getWriter().write("Rate limit exceeded, wait " + waitSec + " seconds");
-            return;
-
         }
 
         filterChain.doFilter(request, response);
