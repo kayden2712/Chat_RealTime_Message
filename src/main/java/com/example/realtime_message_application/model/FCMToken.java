@@ -2,7 +2,6 @@ package com.example.realtime_message_application.model;
 
 import java.time.LocalDateTime;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -34,10 +33,10 @@ public class FCMToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     public FCMToken(){
-        this.createdAt = LocalDateTime.now();
     }
 }
 

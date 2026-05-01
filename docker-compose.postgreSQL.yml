@@ -1,6 +1,7 @@
 services:
   db-postgres:
-    image: postgres:latest
+    image: postgres:18
+
     container_name: postgres-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -9,7 +10,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
+
 
   cache-redis:
     image: redis:alpine
@@ -32,7 +34,6 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       
       # Redis dùng biến env
-      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
       
       # JWT dùng biến env
