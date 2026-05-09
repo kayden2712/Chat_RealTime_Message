@@ -41,7 +41,6 @@ import com.example.realtime_message_application.repository.ParticipantRepository
 import com.example.realtime_message_application.service.ConversationService;
 import com.example.realtime_message_application.service.UserService;
 
-
 @Transactional
 @Service
 public class ConversationServiceImpl implements ConversationService {
@@ -554,5 +553,21 @@ public class ConversationServiceImpl implements ConversationService {
     public ConversationParticipant getEntityByConvIdAndUserId(Long convId, Long userId) {
         return participantRepository.findByConversationAndUser(convId, userId)
                 .orElseThrow(() -> new RuntimeException("Participant not found"));
+    }
+
+    @Override
+    public Long getReceiverId(Long convId, Long senderId) {
+        Conversation conversation = getEntityByConvId(convId);
+
+        Optional<User> receiver = conversation.getParticipants().stream()
+                .map(ConversationParticipant::getUser)
+                .filter(user -> !user.getUserId().equals(senderId))
+                .findFirst();
+
+        if (receiver.isEmpty()) {
+            throw new RuntimeException("Receiver not found in the conversation.");
+        }
+
+        return receiver.get().getUserId();
     }
 }

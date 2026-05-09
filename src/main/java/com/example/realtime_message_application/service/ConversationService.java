@@ -78,4 +78,6 @@ public interface ConversationService {
 
     Conversation getEntityByConvId(Long convId);
 
+    Long getReceiverId(Long convId, Long senderId);
+
 }
