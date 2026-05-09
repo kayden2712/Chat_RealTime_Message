@@ -17,11 +17,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Getter @Setter
+@Setter @Getter
 @Table(name = "fcm_tokens")
 @AllArgsConstructor
 @Builder
 public class FCMToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer tokenId;
@@ -36,7 +37,6 @@ public class FCMToken {
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    public FCMToken(){
+    public FCMToken() {
     }
 }
-

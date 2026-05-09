@@ -61,9 +61,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         Conversation coversation = conversationService.getEntityByConvId(conversationId);
         List<User> participants = new ArrayList<>(coversation.getParticipants().stream().map(ConversationParticipant::getUser).filter(u -> !u.getUserId().equals(message.getSenderId())).toList());
-
         List<String> tokens = fcmrRepository.findAllByUserIn(participants).stream().map(FCMToken::getToken).toList();
-
         String title = message.getSenderName();
         String body = message.getContent() != null ? message.getContent().substring(0, Math.min(40, message.getContent().length())) : "";
 
