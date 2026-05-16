@@ -8,5 +8,7 @@ public interface BanService {
 
     void banUser(BanUserDTO banUserDTO);
 
-    void unbanUser(Long conversationId, Long userId, Long adminId);
+    void unbanUser(BanUserDTO banUserDTO);
+
+    boolean existsByConvIdAndUserId(Long conversationId, Long userId);
 }

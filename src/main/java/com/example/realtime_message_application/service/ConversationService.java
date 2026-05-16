@@ -9,9 +9,11 @@ import com.example.realtime_message_application.dto.conversation.ArchiveConv;
 import com.example.realtime_message_application.dto.conversation.ConversationDTO;
 import com.example.realtime_message_application.dto.conversation.ConversationResponse;
 import com.example.realtime_message_application.dto.conversation.FavoriteConv;
+import com.example.realtime_message_application.dto.conversation.ModerationGroupDTO;
 import com.example.realtime_message_application.dto.conversation.LeaveConversation;
 import com.example.realtime_message_application.dto.conversation.MuteConv;
 import com.example.realtime_message_application.dto.conversation.RemoveParticipant;
+import com.example.realtime_message_application.dto.conversation.UnMuteConv;
 import com.example.realtime_message_application.dto.conversation.UpdateConvRole;
 import com.example.realtime_message_application.dto.conversation.UpdateConvDescription;
 import com.example.realtime_message_application.dto.conversation.UpdateConvImage;
@@ -56,15 +58,11 @@ public interface ConversationService {
 
     void muteConversation(MuteConv muteConv);
 
-    void unMuteConversation(MuteConv unMuteConv);
+    void unMuteConversation(UnMuteConv unMuteConv);
 
-    void addArchiveConversation(ArchiveConv archiveConv);
+    ConversationResponse addOrRemoveAsArchive(ArchiveConv archive);
 
-    void removeArchiveConversation(ArchiveConv archiveConv);
-
-    void addFavoriteConversation(FavoriteConv favoriteConv);
-
-    void removeFavoriteConversation(FavoriteConv favoriteConv);
+    ConversationResponse addOrRemoveAsFavorites(FavoriteConv favorite);
 
     List<ConversationResponse> getAllFavoriteConversation(Long userId);
 
@@ -80,4 +78,5 @@ public interface ConversationService {
 
     Long getReceiverId(Long convId, Long senderId);
 
+    void moderateGroup(ModerationGroupDTO command);
 }

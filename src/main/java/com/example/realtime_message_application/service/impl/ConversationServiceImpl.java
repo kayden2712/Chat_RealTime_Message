@@ -16,12 +16,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.realtime_message_application.dto.conversation.AddParticipant;
 import com.example.realtime_message_application.dto.conversation.ArchiveConv;
+import com.example.realtime_message_application.dto.conversation.BanUserDTO;
 import com.example.realtime_message_application.dto.conversation.ConversationDTO;
 import com.example.realtime_message_application.dto.conversation.ConversationResponse;
 import com.example.realtime_message_application.dto.conversation.FavoriteConv;
 import com.example.realtime_message_application.dto.conversation.LeaveConversation;
+import com.example.realtime_message_application.dto.conversation.ModerationGroupDTO;
 import com.example.realtime_message_application.dto.conversation.MuteConv;
 import com.example.realtime_message_application.dto.conversation.RemoveParticipant;
+import com.example.realtime_message_application.dto.conversation.UnMuteConv;
 import com.example.realtime_message_application.dto.conversation.UpdateConvDescription;
 import com.example.realtime_message_application.dto.conversation.UpdateConvImage;
 import com.example.realtime_message_application.dto.conversation.UpdateConvRole;
@@ -38,6 +41,7 @@ import com.example.realtime_message_application.repository.BlockRepository;
 import com.example.realtime_message_application.repository.ConversationRepository;
 import com.example.realtime_message_application.repository.MessageRepository;
 import com.example.realtime_message_application.repository.ParticipantRepository;
+import com.example.realtime_message_application.service.BanService;
 import com.example.realtime_message_application.service.ConversationService;
 import com.example.realtime_message_application.service.UserService;
 
@@ -48,11 +52,11 @@ public class ConversationServiceImpl implements ConversationService {
     private final ConversationRepository conversationRepository;
     private final MessageRepository messageRepository;
     private final ParticipantRepository participantRepository;
-    private final BanRepository banRepository;
-    private final BlockRepository blockRepository;
+    private final BanService banService;
     private final UserService userService;
     private final ConversationMapper conversationMapper;
     private final TaskScheduler taskScheduler;
+    private final ConversationRepository conversationRespository;
 
     public ConversationServiceImpl(
             ConversationRepository conversationRepository,
@@ -60,17 +64,18 @@ public class ConversationServiceImpl implements ConversationService {
             ParticipantRepository participantRepository,
             BanRepository banRepository,
             BlockRepository blockRepository,
+            BanService banService,
             UserService userService,
             ConversationMapper conversationMapper,
             @Qualifier("heartbeatScheduler") TaskScheduler taskScheduler) { // <--- Chỉ định đích danh
         this.conversationRepository = conversationRepository;
         this.messageRepository = messageRepository;
         this.participantRepository = participantRepository;
-        this.banRepository = banRepository;
-        this.blockRepository = blockRepository;
+        this.banService = banService;
         this.userService = userService;
         this.conversationMapper = conversationMapper;
         this.taskScheduler = taskScheduler;
+        this.conversationRespository = conversationRepository;
     }
 
     @Override
@@ -147,6 +152,10 @@ public class ConversationServiceImpl implements ConversationService {
 
         if (participantRepository.findByConversationAndUser(conv.getConversationId(), member.getUserId()).isPresent()) {
             throw new RuntimeException("User is already a participant in the conversation.");
+        }
+
+        if (banService.existsByConvIdAndUserId(conv.getConversationId(), member.getUserId())) {
+            throw new RuntimeException("User is banned from the conversation.");
         }
 
         ConversationParticipant participant = ConversationParticipant.builder()
@@ -310,7 +319,7 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public void unMuteConversation(MuteConv unMuteConv) {
+    public void unMuteConversation(UnMuteConv unMuteConv) {
         ConversationParticipant participant = getEntityByConvIdAndUserId(unMuteConv.conversationId(),
                 unMuteConv.userId());
 
@@ -327,68 +336,35 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
-    public void addArchiveConversation(ArchiveConv archiveConv) {
-        ConversationParticipant participant = getEntityByConvIdAndUserId(archiveConv.conversationId(),
-                archiveConv.userId());
+    public ConversationResponse addOrRemoveAsArchive(ArchiveConv archive) {
+        if (!conversationRespository.existsById(archive.conversationId())) {
+            throw new RuntimeException("Conversation not found");
+        }
 
+        ConversationParticipant participant = getEntityByConvIdAndUserId(archive.conversationId(),
+                archive.userId());
         if (participant == null) {
-            throw new RuntimeException("You don't in here.");
+            throw new RuntimeException("Only members can add this group as archived.");
         }
-
-        if (participant.isArchived()) {
-            throw new RuntimeException("You are already archived.");
-        }
-
-        participant.setArchived(true);
+        participant.setArchived(!participant.isArchived());
         participantRepository.save(participant);
+        return convertToConversationResponse(participant.getConversation());
     }
 
     @Override
-    public void removeArchiveConversation(ArchiveConv archiveConv) {
-        ConversationParticipant participant = getEntityByConvIdAndUserId(archiveConv.conversationId(),
-                archiveConv.userId());
+    public ConversationResponse addOrRemoveAsFavorites(FavoriteConv favorite) {
+        if (!conversationRespository.existsById(favorite.conversationId())) {
+            throw new RuntimeException("Conversation not found");
+        }
 
+        ConversationParticipant participant = getEntityByConvIdAndUserId(favorite.conversationId(),
+                favorite.userId());
         if (participant == null) {
-            throw new RuntimeException("You don't in here.");
+            throw new RuntimeException("Only members can add this group as favorite.");
         }
-
-        if (!participant.isArchived()) {
-            throw new RuntimeException("You are not archived.");
-        }
-
-        participant.setArchived(false);
-    }
-
-    @Override
-    public void addFavoriteConversation(FavoriteConv favoriteConv) {
-        ConversationParticipant participant = getEntityByConvIdAndUserId(favoriteConv.conversationId(),
-                favoriteConv.userId());
-
-        if (participant == null) {
-            throw new RuntimeException("You don't in here.");
-        }
-
-        if (participant.isFavorite()) {
-            throw new RuntimeException("You are already favorited.");
-        }
-
-        participant.setFavorite(true);
-    }
-
-    @Override
-    public void removeFavoriteConversation(FavoriteConv favoriteConv) {
-        ConversationParticipant participant = getEntityByConvIdAndUserId(favoriteConv.conversationId(),
-                favoriteConv.userId());
-
-        if (participant == null) {
-            throw new RuntimeException("You don't in here.");
-        }
-
-        if (!participant.isFavorite()) {
-            throw new RuntimeException("You are not favorited.");
-        }
-
-        participant.setFavorite(false);
+        participant.setFavorite(!participant.isFavorite());
+        participantRepository.save(participant);
+        return convertToConversationResponse(participant.getConversation());
     }
 
     @Override
@@ -482,6 +458,39 @@ public class ConversationServiceImpl implements ConversationService {
         participantRepository.save(participant2);
 
         return toConversationResponse(savedConv);
+    }
+
+    @Override
+    public void moderateGroup(ModerationGroupDTO command) {
+
+        if (!conversationRepository.existsById(command.getConversationId())) {
+            throw new RuntimeException("Không tìm thấy cuộc hội thoại với ID: " + command.getConversationId());
+        }
+
+        switch (command.getAction().toUpperCase()) {
+            case "MUTE" ->
+                muteConversation(
+                        new MuteConv(command.getConversationId(), command.getTargetUserId(), command.getDuration()));
+
+            case "UNMUTE" ->
+                unMuteConversation(new UnMuteConv(command.getConversationId(), command.getTargetUserId()));
+
+            case "KICK" ->
+                removeParticipantInConversation(new RemoveParticipant(command.getConversationId(),
+                        command.getTargetUserId(), command.getModeratorId()));
+
+            case "BAN" ->
+                banService.banUser(new BanUserDTO(command.getConversationId(), command.getTargetUserId(),
+                        command.getModeratorId(), "BAN"));
+
+            case "UNBAN" ->
+                banService.unbanUser(new BanUserDTO(command.getConversationId(), command.getTargetUserId(),
+                        command.getModeratorId(), "UNBAN"));
+
+            default ->
+                throw new RuntimeException(
+                        "Hành động '" + command.getAction() + "' không hợp lệ hoặc không được hỗ trợ.");
+        }
     }
 
     private ConversationResponse toConversationResponse(Conversation conversation) {

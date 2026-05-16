@@ -8,9 +8,9 @@ import com.example.realtime_message_application.model.BannedUser;
 import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
 import com.example.realtime_message_application.repository.BanRepository;
+import com.example.realtime_message_application.repository.ConversationRepository;
 import com.example.realtime_message_application.repository.ParticipantRepository;
 import com.example.realtime_message_application.service.BanService;
-import com.example.realtime_message_application.service.ConversationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class BanServiceImpl implements BanService {
 
     private final BanRepository banRepo;
-    private final ConversationService conversationService;
+    private final ConversationRepository conversationRepo;
     private final ParticipantRepository participantRepo;
 
     @Override
@@ -30,7 +30,8 @@ public class BanServiceImpl implements BanService {
 
     @Override
     public void banUser(BanUserDTO banUserDTO) {
-        Conversation conversation = conversationService.getEntityByConvId(banUserDTO.conversationId());
+        Conversation conversation = conversationRepo.findById(banUserDTO.conversationId())
+                .orElseThrow(() -> new RuntimeException("Conversation not found"));
         ConversationParticipant targetUser = getParticipant(conversation.getConversationId(), banUserDTO.targetUserId());
         ConversationParticipant admin = getParticipant(conversation.getConversationId(), banUserDTO.adminId());
 
@@ -58,10 +59,10 @@ public class BanServiceImpl implements BanService {
     }
 
     @Override
-    public void unbanUser(Long conversationId, Long userId, Long adminId) {
-        BannedUser bannedUser = getBannedUser(conversationId, userId);
+    public void unbanUser(BanUserDTO banUserDTO) {
+        BannedUser bannedUser = getBannedUser(banUserDTO.conversationId(), banUserDTO.targetUserId());
 
-        ConversationParticipant admin = getParticipant(conversationId, adminId);
+        ConversationParticipant admin = getParticipant(banUserDTO.conversationId(), banUserDTO.adminId());
         if (admin.getParticipantRole() != ParticipantRole.ADMIN) {
             throw new RuntimeException("Admins can only unban users.");
         }
@@ -77,6 +78,11 @@ public class BanServiceImpl implements BanService {
         return participantRepo.findByConversationAndUser(
                 conversationId, userId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
+    }
+
+    @Override
+    public boolean existsByConvIdAndUserId(Long conversationId, Long userId) {
+        return banRepo.existsByConvIdAndUserId(conversationId, userId);
     }
 
 }
