@@ -34,7 +34,7 @@ public class ReadReceiptServiceImpl implements ReadReceiptService {
     }
 
     @Override
-    public ReadReceiptResponse markAsRead(ReadReceiptCommand command) {
+    public ReadReceiptResponse markAsRead(ReadReceiptDTO command) {
         Message msg = messageRepo.findById(command.messageId())
                 .orElseThrow(() -> new RuntimeException("Message not found"));
         User user = userService.getEntityByUserId(command.readerId());
@@ -49,12 +49,6 @@ public class ReadReceiptServiceImpl implements ReadReceiptService {
         }
 
         return convertTResponse(readReceiptRepo.save(receipt));
-    }
-
-    @Override
-    public ReadReceiptResponse markAsReadForActor(ReadReceiptDTO incoming, int actorId) {
-        ReadReceiptCommand command = new ReadReceiptCommand(incoming.messageId(), (long) actorId);
-        return markAsRead(command);
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.redisson.Redisson;
 import org.redisson.api.RAtomicLong;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import com.example.realtime_message_application.service.RateLimitingService;
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@Profile("!test")
 public class RateLimitingServiceImpl implements RateLimitingService {
 
     private final Supplier<BucketConfiguration> bucketConfig;
