@@ -17,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.example.realtime_message_application.component.ChatEventPublisher;
+import com.example.realtime_message_application.dto.conversation.ChatEvent;
 import com.example.realtime_message_application.dto.message.ChatMessage;
 import com.example.realtime_message_application.dto.message.DeleteMessage;
 import com.example.realtime_message_application.dto.message.EditMessage;
@@ -58,6 +60,7 @@ public class MessageServiceImpl implements MessageService {
     private final BanRepository banRepository;
     private final BlockRepository blockRepository;
     private final ParticipantService participantService;
+    private final ChatEventPublisher chatEventPublisher;
 
     @Override
     public Message getMessageById(Long messageId) {
@@ -74,8 +77,7 @@ public class MessageServiceImpl implements MessageService {
     public Message getMessageByIdWithDetails(Long messageId) {
         Message message = messageRepository.findByMessageIdWithDetails(messageId)
                 .orElseThrow(() -> new RuntimeException("Message not found"));
-        message.setReplies(new HashSet<>(message.getReplies())); // ép Hibernate phải tải dữ liệu từ database ngay lập
-                                                                 // tức
+        message.setReplies(new HashSet<>(message.getReplies())); // ép Hibernate phải tải dữ liệu từ database ngay lập tuc
         return message;
     }
 
@@ -107,7 +109,6 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public MessageResponse restoreMessage(RestoreMessage restoreMessage) {
         Message deleted = getMessageById(restoreMessage.messageId());
-
         validateUser(restoreMessage.userId());
 
         if (!deleted.getSender().getUserId().equals(restoreMessage.userId())) {
@@ -117,8 +118,14 @@ public class MessageServiceImpl implements MessageService {
         deleted.setDeleted(false);
         deleted.setDeletedBy(null);
 
-        return messageMapper.toMessageResponse(deleted);
+        MessageResponse response = messageMapper.toMessageResponse(deleted);
 
+        chatEventPublisher.broadcastToConversation(
+                deleted.getConversation().getConversationId(),
+                restoreMessage.userId(),
+                new ChatEvent<>("MESSAGE_RESTORED", response));
+
+        return response;
     }
 
     @Override
@@ -324,7 +331,7 @@ public class MessageServiceImpl implements MessageService {
     }
 
     private void validateBan(Long convId, Long userId) {
-        if (!banRepository.existsByConvIdAndUserId(convId, userId)) {
+        if (banRepository.existsByConvIdAndUserId(convId, userId)) {
             throw new RuntimeException("You are banned from this conversation.");
         }
     }
