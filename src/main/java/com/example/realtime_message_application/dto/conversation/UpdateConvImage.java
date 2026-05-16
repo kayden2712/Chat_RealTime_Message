@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateConvImage {
     Long conversationId;
-    
+    Long userId;
     MultipartFile image;
 }
