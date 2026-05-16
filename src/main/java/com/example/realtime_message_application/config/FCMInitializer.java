@@ -13,6 +13,7 @@ import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 
 @Component
+@org.springframework.context.annotation.Profile("!test")
 public class FCMInitializer {
 
     @Value("${app.firebase-configuration-file}")

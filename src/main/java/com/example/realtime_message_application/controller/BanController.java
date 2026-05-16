@@ -25,7 +25,7 @@ public class BanController {
 
     @PostMapping("/unban")
     public ResponseEntity<?> unbanUser(@RequestBody BanUserDTO banUserDTO) {
-        banService.unbanUser(banUserDTO.conversationId(), banUserDTO.targetUserId(), banUserDTO.adminId());
+        banService.unbanUser(banUserDTO);
         return ResponseEntity.ok("User unbanned successfully.");
     }
 }

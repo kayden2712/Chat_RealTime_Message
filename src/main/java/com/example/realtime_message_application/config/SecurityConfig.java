@@ -35,7 +35,7 @@ public class SecurityConfig {
                 // .requestMatchers("/api/v1/auth/**").permitAll()
                 // // Các request còn lại đều phải xác thực
                 // .anyRequest().authenticated() )
-                
+
                 // Thêm Filter kiểm tra JWT trước khi xử lý các filter mặc định của Spring
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         http.httpBasic(httpBasic -> {
