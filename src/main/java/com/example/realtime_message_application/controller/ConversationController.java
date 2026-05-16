@@ -1,6 +1,16 @@
 package com.example.realtime_message_application.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,6 +22,7 @@ import com.example.realtime_message_application.dto.conversation.FavoriteConv;
 import com.example.realtime_message_application.dto.conversation.LeaveConversation;
 import com.example.realtime_message_application.dto.conversation.MuteConv;
 import com.example.realtime_message_application.dto.conversation.RemoveParticipant;
+import com.example.realtime_message_application.dto.conversation.UnMuteConv;
 import com.example.realtime_message_application.dto.conversation.UpdateConvDescription;
 import com.example.realtime_message_application.dto.conversation.UpdateConvImage;
 import com.example.realtime_message_application.dto.conversation.UpdateConvRole;
@@ -19,16 +30,6 @@ import com.example.realtime_message_application.dto.conversation.UpdateConvTitle
 import com.example.realtime_message_application.service.ConversationService;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/conversation")
@@ -47,7 +48,7 @@ public class ConversationController {
         return ResponseEntity.ok(conversationService.getAllConversationByUserId(userId));
     }
 
-    @GetMapping("/all/{title}")
+    @GetMapping("/all/title/{title}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<ConversationResponse>> getAllConversationByTitle(@PathVariable String title) {
         return ResponseEntity.ok(conversationService.getConversationByTitle(title));
@@ -59,8 +60,8 @@ public class ConversationController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ConversationResponse> createConversation(@RequestBody ConversationDTO conversation,
-            MultipartFile image) {
+    public ResponseEntity<ConversationResponse> createConversation(@RequestPart("conversation") ConversationDTO conversation,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         return ResponseEntity.ok(conversationService.createConversation(conversation, image));
     }
 
@@ -115,7 +116,9 @@ public class ConversationController {
     }
 
     @PostMapping("/update/image")
-    public ResponseEntity<?> updateConversationImage(@RequestBody UpdateConvImage updateConvImage) {
+    public ResponseEntity<?> updateConversationImage(@RequestPart("updateConvImage") UpdateConvImage updateConvImage,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        if (image != null) updateConvImage.setImage(image);
         return ResponseEntity.ok(conversationService.updateConversationImage(updateConvImage));
     }
 
@@ -136,33 +139,22 @@ public class ConversationController {
     }
 
     @PostMapping("/unmute")
-    public ResponseEntity<?> unMuteConversation(@RequestBody MuteConv unMuteConv) {
+    public ResponseEntity<?> unMuteConversation(@RequestBody UnMuteConv unMuteConv) {
         conversationService.unMuteConversation(unMuteConv);
         return ResponseEntity.ok().body("Conversation unmuted successfully.");
     }
 
-    @PostMapping("/add/archive")
+    @PostMapping("/archive")
     public ResponseEntity<?> addArchiveConversation(@RequestBody ArchiveConv archiveConv) {
-        conversationService.addArchiveConversation(archiveConv);
+        conversationService.addOrRemoveAsArchive(archiveConv);
         return ResponseEntity.ok().body("Conversation archived successfully.");
     }
 
-    @PostMapping("/remove/archive")
-    public ResponseEntity<?> removeArchiveConversation(@RequestBody ArchiveConv archiveConv) {
-        conversationService.removeArchiveConversation(archiveConv);
-        return ResponseEntity.ok().body("Conversation unarchived successfully.");
-    }
 
-    @PostMapping("/add/favorite")
+    @PostMapping("/favorite")
     public ResponseEntity<?> addFavoriteConversation(@RequestBody FavoriteConv favoriteConv) {
-        conversationService.addFavoriteConversation(favoriteConv);
+        conversationService.addOrRemoveAsFavorites(favoriteConv);
         return ResponseEntity.ok().body("Conversation favorited successfully.");
-    }
-
-    @PostMapping("/remove/favorite")
-    public ResponseEntity<?> removeFavoriteConversation(@RequestBody FavoriteConv favoriteConv) {
-        conversationService.removeFavoriteConversation(favoriteConv);
-        return ResponseEntity.ok().body("Conversation unfavorited successfully.");
     }
 
     @GetMapping("/all/favorite/{userId}")
