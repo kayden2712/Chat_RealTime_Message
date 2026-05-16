@@ -20,8 +20,12 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.realtime_message_application.config.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.user.UserResponse;
 import com.example.realtime_message_application.dto.user.updateBio;
+import com.example.realtime_message_application.security.JwtAuthenticationFilter;
+import com.example.realtime_message_application.security.JwtService;
+import com.example.realtime_message_application.service.RateLimitingService;
 import com.example.realtime_message_application.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -37,6 +41,18 @@ class UserControllerTest {
 
     @MockBean
     private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+    @MockBean
+    private RateLimitingService rateLimitingService;
+
+    @MockBean
+    private RateLimitingInterceptor rateLimitingInterceptor;
+
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private ObjectMapper objectMapper;

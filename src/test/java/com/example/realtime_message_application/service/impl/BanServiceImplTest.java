@@ -1,16 +1,18 @@
 package com.example.realtime_message_application.service.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.example.realtime_message_application.dto.conversation.BanUserDTO;
@@ -20,8 +22,8 @@ import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
 import com.example.realtime_message_application.model.User;
 import com.example.realtime_message_application.repository.BanRepository;
+import com.example.realtime_message_application.repository.ConversationRepository;
 import com.example.realtime_message_application.repository.ParticipantRepository;
-import com.example.realtime_message_application.service.ConversationService;
 
 @ExtendWith(MockitoExtension.class)
 class BanServiceImplTest {
@@ -30,7 +32,7 @@ class BanServiceImplTest {
     private BanRepository banRepo;
 
     @Mock
-    private ConversationService conversationService;
+    private ConversationRepository conversationRepo;
 
     @Mock
     private ParticipantRepository participantRepo;
@@ -50,13 +52,13 @@ class BanServiceImplTest {
         adminUser = User.builder().userId(1L).username("admin").build();
         targetUser = User.builder().userId(2L).username("target").build();
         conversation = Conversation.builder().conversationId(10L).build();
-        
+
         adminParticipant = ConversationParticipant.builder()
                 .user(adminUser)
                 .conversation(conversation)
                 .participantRole(ParticipantRole.ADMIN)
                 .build();
-                
+
         targetParticipant = ConversationParticipant.builder()
                 .user(targetUser)
                 .conversation(conversation)
@@ -68,7 +70,7 @@ class BanServiceImplTest {
 
     @Test
     void banUser_Success_ShouldSaveBanRecord() {
-        when(conversationService.getEntityByConvId(10L)).thenReturn(conversation);
+        when(conversationRepo.findById(10L)).thenReturn(Optional.of(conversation));
         when(participantRepo.findByConversationAndUser(10L, 2L)).thenReturn(Optional.of(targetParticipant));
         when(participantRepo.findByConversationAndUser(10L, 1L)).thenReturn(Optional.of(adminParticipant));
         when(banRepo.existsByConvIdAndUserId(10L, 2L)).thenReturn(false);
@@ -82,7 +84,7 @@ class BanServiceImplTest {
     @Test
     void banUser_NonAdmin_ShouldThrowException() {
         adminParticipant.setParticipantRole(ParticipantRole.MEMBER);
-        when(conversationService.getEntityByConvId(10L)).thenReturn(conversation);
+        when(conversationRepo.findById(10L)).thenReturn(Optional.of(conversation));
         when(participantRepo.findByConversationAndUser(10L, 2L)).thenReturn(Optional.of(targetParticipant));
         when(participantRepo.findByConversationAndUser(10L, 1L)).thenReturn(Optional.of(adminParticipant));
 
@@ -92,7 +94,7 @@ class BanServiceImplTest {
 
     @Test
     void banUser_AlreadyBanned_ShouldThrowException() {
-        when(conversationService.getEntityByConvId(10L)).thenReturn(conversation);
+        when(conversationRepo.findById(10L)).thenReturn(Optional.of(conversation));
         when(participantRepo.findByConversationAndUser(10L, 2L)).thenReturn(Optional.of(targetParticipant));
         when(participantRepo.findByConversationAndUser(10L, 1L)).thenReturn(Optional.of(adminParticipant));
         when(banRepo.existsByConvIdAndUserId(10L, 2L)).thenReturn(true);
@@ -106,8 +108,8 @@ class BanServiceImplTest {
         BannedUser bannedUser = BannedUser.builder().build();
         when(banRepo.findByConvIdAndUserId(10L, 2L)).thenReturn(Optional.of(bannedUser));
         when(participantRepo.findByConversationAndUser(10L, 1L)).thenReturn(Optional.of(adminParticipant));
-
-        banService.unbanUser(10L, 2L, 1L);
+        BanUserDTO unbanUserDTO = new BanUserDTO(10L, 2L, 1L, null);
+        banService.unbanUser(unbanUserDTO);
 
         verify(banRepo).delete(bannedUser);
     }
@@ -118,8 +120,9 @@ class BanServiceImplTest {
         adminParticipant.setParticipantRole(ParticipantRole.MEMBER);
         when(banRepo.findByConvIdAndUserId(10L, 2L)).thenReturn(Optional.of(bannedUser));
         when(participantRepo.findByConversationAndUser(10L, 1L)).thenReturn(Optional.of(adminParticipant));
+        BanUserDTO unbanUserDTO = new BanUserDTO(10L, 2L, 1L, null);
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> banService.unbanUser(10L, 2L, 1L));
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> banService.unbanUser(unbanUserDTO));
         assertEquals("Admins can only unban users.", exception.getMessage());
     }
 
@@ -138,7 +141,8 @@ class BanServiceImplTest {
     void findByConversationAndUser_NotFound_ShouldThrowException() {
         when(banRepo.findByConvIdAndUserId(10L, 2L)).thenReturn(Optional.empty());
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> banService.findByConversationAndUser(10L, 2L));
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> banService.findByConversationAndUser(10L, 2L));
         assertEquals("User not banned", exception.getMessage());
     }
 }

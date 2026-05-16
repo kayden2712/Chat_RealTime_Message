@@ -1,17 +1,19 @@
 package com.example.realtime_message_application.service.impl;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 import java.util.Optional;
-import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.TaskScheduler;
 
@@ -22,9 +24,12 @@ import com.example.realtime_message_application.mapper.ConversationMapper;
 import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
 import com.example.realtime_message_application.model.User;
+import com.example.realtime_message_application.repository.BanRepository;
+import com.example.realtime_message_application.repository.BlockRepository;
 import com.example.realtime_message_application.repository.ConversationRepository;
 import com.example.realtime_message_application.repository.MessageRepository;
 import com.example.realtime_message_application.repository.ParticipantRepository;
+import com.example.realtime_message_application.service.BanService;
 import com.example.realtime_message_application.service.UserService;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +41,12 @@ class ConversationServiceImplTest {
     private MessageRepository messageRepository;
     @Mock
     private ParticipantRepository participantRepository;
+    @Mock
+    private BanRepository banRepository;
+    @Mock
+    private BlockRepository blockRepository;
+    @Mock
+    private BanService banService;
     @Mock
     private UserService userService;
     @Mock
