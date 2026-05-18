@@ -18,13 +18,13 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.message.ChatMessage;
 import com.example.realtime_message_application.dto.message.DeleteMessage;
 import com.example.realtime_message_application.dto.message.EditMessage;
 import com.example.realtime_message_application.dto.message.MessageResponse;
 import com.example.realtime_message_application.dto.message.PinMessage;
 import com.example.realtime_message_application.dto.message.RestoreMessage;
-import com.example.realtime_message_application.config.RateLimitingInterceptor;
 import com.example.realtime_message_application.model.Message;
 import com.example.realtime_message_application.security.JwtAuthenticationFilter;
 import com.example.realtime_message_application.security.JwtService;

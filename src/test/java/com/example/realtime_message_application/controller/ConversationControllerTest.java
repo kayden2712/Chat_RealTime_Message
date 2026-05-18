@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.conversation.AddParticipant;
 import com.example.realtime_message_application.dto.conversation.ArchiveConv;
 import com.example.realtime_message_application.dto.conversation.ConversationDTO;
@@ -33,7 +34,6 @@ import com.example.realtime_message_application.dto.conversation.UpdateConvDescr
 import com.example.realtime_message_application.dto.conversation.UpdateConvImage;
 import com.example.realtime_message_application.dto.conversation.UpdateConvRole;
 import com.example.realtime_message_application.dto.conversation.UpdateConvTitle;
-import com.example.realtime_message_application.config.RateLimitingInterceptor;
 import com.example.realtime_message_application.enums.ConversationType;
 import com.example.realtime_message_application.enums.ParticipantRole;
 import com.example.realtime_message_application.security.JwtAuthenticationFilter;

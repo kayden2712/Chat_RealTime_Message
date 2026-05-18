@@ -10,6 +10,8 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
+import com.example.realtime_message_application.component.UserInterceptor;
 import com.example.realtime_message_application.security.JwtHandshakeInterceptor;
 
 import lombok.RequiredArgsConstructor;

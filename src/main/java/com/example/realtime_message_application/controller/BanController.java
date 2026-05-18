@@ -12,7 +12,7 @@ import com.example.realtime_message_application.service.BanService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/ban")
+@RequestMapping("/api/v1/ban")
 @RequiredArgsConstructor
 public class BanController {
     private final BanService banService;

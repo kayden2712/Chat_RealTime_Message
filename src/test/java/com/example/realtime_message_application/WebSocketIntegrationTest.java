@@ -30,8 +30,8 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import com.example.realtime_message_application.config.FCMInitializer;
-import com.example.realtime_message_application.config.RateLimitingInterceptor;
+import com.example.realtime_message_application.component.FCMInitializer;
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.message.ChatMessage;
 import com.example.realtime_message_application.dto.message.MessageResponse;
 import com.example.realtime_message_application.enums.ConversationType;

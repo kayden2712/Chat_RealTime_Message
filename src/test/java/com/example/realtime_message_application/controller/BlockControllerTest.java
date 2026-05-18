@@ -16,7 +16,7 @@ import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.realtime_message_application.config.RateLimitingInterceptor;
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.conversation.BlockingDTO;
 import com.example.realtime_message_application.model.Block;
 import com.example.realtime_message_application.security.JwtAuthenticationFilter;

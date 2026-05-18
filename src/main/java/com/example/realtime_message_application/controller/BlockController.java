@@ -14,7 +14,7 @@ import com.example.realtime_message_application.service.BlockedService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/block")
+@RequestMapping("/api/v1/block")
 @RequiredArgsConstructor
 public class BlockController {
     private final BlockedService blockedService;

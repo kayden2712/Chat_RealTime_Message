@@ -13,9 +13,8 @@ import com.example.realtime_message_application.service.FCMService;
 
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
-@RequestMapping("/api/fcm")
+@RequestMapping("/api/v1/fcm")
 @RequiredArgsConstructor
 public class FCMController {
 
@@ -26,7 +25,6 @@ public class FCMController {
         fcmService.registerToken(request.userId(), request.token());
         return ResponseEntity.ok("Token registered successfully");
     }
-    
 
     @DeleteMapping("/unregister")
     public ResponseEntity<String> unregisterToken(@RequestParam String token) {

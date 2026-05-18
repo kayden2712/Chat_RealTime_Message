@@ -15,7 +15,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.realtime_message_application.config.RateLimitingInterceptor;
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.conversation.ParticipantResponse;
 import com.example.realtime_message_application.security.JwtAuthenticationFilter;
 import com.example.realtime_message_application.security.JwtService;

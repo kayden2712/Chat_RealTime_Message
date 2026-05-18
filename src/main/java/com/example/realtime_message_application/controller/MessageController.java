@@ -22,7 +22,7 @@ import com.example.realtime_message_application.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/messages")
+@RequestMapping("/api/v1/messages")
 @RequiredArgsConstructor
 public class MessageController {
 

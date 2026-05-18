@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import com.example.realtime_message_application.config.RateLimitingInterceptor;
+import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.security.JwtAuthenticationFilter;
 import com.example.realtime_message_application.security.JwtService;
 import com.example.realtime_message_application.service.PresenceService;

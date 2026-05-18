@@ -1,4 +1,4 @@
-package com.example.realtime_message_application.config;
+package com.example.realtime_message_application.component;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;

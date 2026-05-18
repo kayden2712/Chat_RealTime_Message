@@ -32,7 +32,7 @@ import com.example.realtime_message_application.service.ConversationService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/conversation")
+@RequestMapping("/api/v1/conversation")
 @RequiredArgsConstructor
 public class ConversationController {
     private final ConversationService conversationService;
