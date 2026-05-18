@@ -62,121 +62,210 @@ graph TD
     A -->|WebSocket STOMP| C[WebSocket Endpoints]
     B --> D[PostgreSQL]
     B --> E[Redis - Cache / Rate Limiting]
-    C --> F[ChatEventPublisher]
-    F --> G[STOMP Topics / Queues]
-    B --> H[Firebase FCM]
-    I[WebSocketEventListener] --> J[PresenceService]
-    J --> E
-    K[JwtAuthenticationFilter] --> B
-    L[RateLimitingInterceptor] --> B
-```
+    ---
 
-### Key Components
+    ## English README — Full (with examples)
 
-| Component                | Path / File                                                                                       | Purpose                                                               |
-| ------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `ChatEventPublisher`     | [`component/ChatEventPublisher.java`](src/main/java/com/example/realtime_message_application/component/ChatEventPublisher.java)     | Broadcasts chat events to group topics or user queues                 |
-| `WebSocketEventListener` | [`component/WebSocketEventListener.java`](src/main/java/com/example/realtime_message_application/component/WebSocketEventListener.java) | Tracks user online/offline presence on connect/disconnect             |
-| `JwtService`             | [`security/JwtService.java`](src/main/java/com/example/realtime_message_application/security/JwtService.java)                       | Generates and validates JWT access/refresh tokens                     |
-| `RateLimitingService`    | [`service/RateLimitingService.java`](src/main/java/com/example/realtime_message_application/service/RateLimitingService.java)       | Bucket4j-based rate limiting with Redis backend                       |
-| `FCMService`             | [`service/FCMService.java`](src/main/java/com/example/realtime_message_application/service/FCMService.java)                         | Sends push notifications via Firebase                                |
-| `PresenceService`        | [`service/PresenceService.java`](src/main/java/com/example/realtime_message_application/service/PresenceService.java)               | Manages user online status in Redis                                  |
+    Project: realtimemessage
 
----
+    Short description
+    A real-time messaging backend built with Spring Boot, WebSocket (STOMP), PostgreSQL, Redis and Firebase Cloud Messaging (FCM). It supports private and group conversations, message pinning, read receipts, blocking/ban, rate limiting (Bucket4j + Redis/Redisson), and push notifications.
 
-## Prerequisites
+    Table of contents
+    - Overview
+    - Tech stack
+    - Prerequisites
+    - Environment variables
+    - Run with Docker Compose
+    - Run locally (development)
+    - Configuration notes
+    - WebSocket / STOMP examples
+    - REST API examples (curl)
+    - Tests
+    - Build & production
+    - Troubleshooting
+    - Contributing
 
-- **Java 21** (or higher)
-- **Maven 3.9+** (the project includes Maven Wrapper `./mvnw`)
-- **PostgreSQL 18** (or Docker for auto-setup)
-- **Redis 7+** (or Docker for auto-setup)
-- **Firebase** service account key (`serviceAccountKey.json`) for push notifications
+    Overview
+    This backend exposes REST APIs and WebSocket (STOMP) endpoints. Use REST for management (create conversation, upload files, register FCM tokens) and WebSocket/STOMP for real-time message exchange and presence.
 
----
+    Tech stack
+    - Spring Boot 3.5
+    - Java 21
+    - WebSocket (STOMP over SockJS)
+    - PostgreSQL 18
+    - Redis (cache / pub-sub)
+    - Redisson + Bucket4j (rate limiting)
+    - Firebase Admin SDK (FCM)
+    - Maven (`./mvnw`)
 
-## Getting Started
+    Prerequisites
+    - Docker & Docker Compose
+    - Java 21 (only needed for running locally)
+    - Maven (use `./mvnw` included)
+    - Firebase service account JSON (for FCM features)
 
-### 1. Clone and Configure
+    Environment variables (`.env` example)
+    Create a `.env` in project root used by `docker-compose.postgreSQL.yml`:
 
-```bash
-git clone <repository-url>
-cd realtimemessage
-```
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=postgrespass
+    POSTGRES_DB_NAME=realtimedb
+    REDIS_PORT=6379
+    JWT_SECRET_KEY=your_jwt_secret
 
-### 2. Set Up Environment Variables
+    Note: Spring reads `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `SPRING_DATA_REDIS_HOST`/`SPRING_DATA_REDIS_PORT`, `JWT_SECRET` (or `JWT_SECRET_KEY`) from env or `application.properties`.
 
-Create a `.env` file in the project root (used by Docker Compose):
+    Run with Docker Compose
+    Start services (Postgres, Redis, app):
 
-```env
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=12345
-POSTGRES_DB_NAME=realtimemessage
-REDIS_PORT=6379
-JWT_SECRET_KEY=your-256-bit-secret-key-here
-```
+    ```bash
+    docker compose -f docker-compose.postgreSQL.yml --env-file .env up --build -d
+    ```
 
-For local development without Docker, update [`application.properties`](src/main/resources/application.properties):
+    Check status:
 
-| Property                          | Default Value                                      | Description                    |
-| --------------------------------- | -------------------------------------------------- | ------------------------------ |
-| `SPRING_DATASOURCE_URL`           | `jdbc:postgresql://localhost:5432/realtimemessage` | PostgreSQL JDBC URL            |
-| `SPRING_DATASOURCE_USERNAME`      | `postgres`                                         | Database username              |
-| `SPRING_DATASOURCE_PASSWORD`      | `12345`                                            | Database password              |
-| `SPRING_DATA_REDIS_HOST`          | `localhost`                                        | Redis host                     |
-| `SPRING_DATA_REDIS_PORT`          | `6379`                                             | Redis port                     |
-| `JWT_SECRET`                      | *(256-bit hex key)*                                | Secret key for JWT signing     |
-| `jwt.expirationInSec`             | `864000` (10 days)                                 | Access token expiration        |
-| `jwt.refreshExpirationInSec`      | `864000` (10 days)                                 | Refresh token expiration       |
-| `app.firebase-configuration-file` | `serviceAccountKey.json`                           | Path to Firebase service key   |
+    ```bash
+    docker ps
+    docker logs -f realtimemessage-service
+    ```
 
-### 3. Run with Docker Compose (Recommended)
+    Stop and remove:
 
-```bash
-docker compose -f docker-compose.postgreSQL.yml --env-file .env up -d
-```
+    ```bash
+    docker compose -f docker-compose.postgreSQL.yml down
+    ```
 
-This starts PostgreSQL, Redis, and the application container on port `8080`.
+    Run locally (development)
+    1. Ensure PostgreSQL and Redis are available (local or via Docker).
+    2. Configure `src/main/resources/application.properties` or export environment variables.
+    3. Run:
 
-### 4. Run Locally (Development)
+    ```bash
+    ./mvnw spring-boot:run
+    ```
 
-```bash
-# Ensure PostgreSQL and Redis are running, then:
-./mvnw spring-boot:run
-```
+    Application default: http://localhost:8080
 
-The application starts on **http://localhost:8080**.
+    Configuration notes
+    - `SPRING_DATASOURCE_URL` example: `jdbc:postgresql://db-postgres:5432/realtimedb` (use service name `db-postgres` when using compose)
+    - `SPRING_DATASOURCE_USERNAME` / `SPRING_DATASOURCE_PASSWORD` — from `.env`
+    - `SPRING_DATA_REDIS_HOST` / `SPRING_DATA_REDIS_PORT` — `redis-cache` when using compose
+    - `JWT_SECRET` or `JWT_SECRET_KEY` must be set for JWT signing
+    - `serviceAccountKey.json` for Firebase should be placed into `src/main/resources` or path set via `app.firebase-configuration-file`
 
----
+    WebSocket / STOMP (examples)
+    Endpoint: `/ws` (SockJS fallback enabled)
 
-## API Endpoints
+    Typical flow (STOMP):
+    1) CONNECT / STOMP handshake: include JWT in headers
+    2) SUBSCRIBE to conversation topics
+    3) SEND messages to application destination
 
-### Authentication
-All REST endpoints (except WebSocket handshake) require a valid JWT token in the `Authorization: Bearer <token>` header. WebSocket connections pass the token via STOMP headers.
+    STOMP connect (client example headers):
 
-### Controllers
+    Headers:
+    - `Authorization: Bearer <JWT>`
+    - `accept-version:1.2`
 
-| Controller                 | Base Path              | Description                                  |
-| -------------------------- | ---------------------- | -------------------------------------------- |
-| [`UserController`](src/main/java/com/example/realtime_message_application/controller/UserController.java)           | `/api/users`           | User profile management                     |
-| [`ConversationController`](src/main/java/com/example/realtime_message_application/controller/ConversationController.java) | `/api/conversations`   | Create, update, archive, favorite, mute     |
-| [`ParticipantController`](src/main/java/com/example/realtime_message_application/controller/ParticipantController.java)  | `/api/conversations/{id}/participants` | Add, remove, change role        |
-| [`MessageController`](src/main/java/com/example/realtime_message_application/controller/MessageController.java)       | `/api/conversations/{id}/messages`     | Send, edit, delete, pin, read receipt |
-| [`ChatController`](src/main/java/com/example/realtime_message_application/controller/ChatController.java)           | WebSocket `/ws`        | Real-time message handling over STOMP       |
-| [`BlockController`](src/main/java/com/example/realtime_message_application/controller/BlockController.java)          | `/api/blocks`          | Block / unblock users                       |
-| [`BanController`](src/main/java/com/example/realtime_message_application/controller/BanController.java)            | `/api/bans`            | Ban / unban users from group conversations  |
-| [`FCMController`](src/main/java/com/example/realtime_message_application/controller/FCMController.java)            | `/api/fcm`             | Register / unregister FCM device tokens     |
+    Subscribe (example):
 
----
+    SUBSCRIBE to `/topic/conversations.{convId}` to receive group messages.
+    SUBSCRIBE to `/user/queue/conversation.{convId}` to receive private queue messages.
 
-## WebSocket (STOMP)
+    Send message (client -> server) to app destination `/app/chat.sendMessage` with JSON payload:
 
-The WebSocket endpoint is available at `/ws` with SockJS fallback.
+    {
+      "conversationId": "<convId>",
+      "type": "TEXT",
+      "content": "Hello, world!",
+      "senderId": "<userId>",
+      "metadata": {}
+    }
 
-- **Broker prefix:** `/topic`, `/queue`
-- **Application destination prefix:** `/app`
-- **Handshake interceptor:** [`JwtHandshakeInterceptor`](src/main/java/com/example/realtime_message_application/security/JwtHandshakeInterceptor.java) validates JWT during WebSocket upgrade
+    Server broadcasts to `/topic/conversations.{convId}` or `/user/queue/conversation.{convId}` as appropriate.
 
-### STOMP Destinations
+    REST API examples (curl)
+    Note: adapt host/port, credentials and endpoints as in your app.
+
+    1) Authenticate (example) — assume endpoint `/api/auth/login` returns `{ accessToken, refreshToken }`:
+
+    ```bash
+    curl -X POST http://localhost:8080/api/auth/login \
+      -H "Content-Type: application/json" \
+      -d '{"username":"alice","password":"password"}'
+    ```
+
+    2) Create private conversation:
+
+    ```bash
+    curl -X POST http://localhost:8080/api/conversations \
+      -H "Authorization: Bearer <ACCESS_TOKEN>" \
+      -H "Content-Type: application/json" \
+      -d '{"type":"PRIVATE","participantIds":["user1","user2"]}'
+    ```
+
+    3) Send message via REST (if supported):
+
+    ```bash
+    curl -X POST http://localhost:8080/api/conversations/<convId>/messages \
+      -H "Authorization: Bearer <ACCESS_TOKEN>" \
+      -H "Content-Type: application/json" \
+      -d '{"type":"TEXT","content":"Hello from REST"}'
+    ```
+
+    4) Register FCM token:
+
+    ```bash
+    curl -X POST http://localhost:8080/api/fcm/register \
+      -H "Authorization: Bearer <ACCESS_TOKEN>" \
+      -H "Content-Type: application/json" \
+      -d '{"token":"<device_fcm_token>"}'
+    ```
+
+    WebSocket quick example (w/ STOMP JS minimal flow)
+    - Connect and send JWT in connect headers
+    - Subscribe to `/topic/conversations.123`
+    - Send message JSON to `/app/chat.sendMessage`
+
+    Tests
+    Run unit and integration tests with:
+
+    ```bash
+    ./mvnw test
+    ```
+
+    Build & production
+    Build jar:
+
+    ```bash
+    ./mvnw clean package -DskipTests
+    java -jar target/*.jar
+    ```
+
+    Build docker image and run:
+
+    ```bash
+    docker build -t realtimemessage .
+    docker run -p 8080:8080 \
+      -e SPRING_DATASOURCE_URL=jdbc:postgresql://host:5432/realtimedb \
+      -e SPRING_DATASOURCE_USERNAME=postgres \
+      -e SPRING_DATASOURCE_PASSWORD=postgrespass \
+      -e SPRING_DATA_REDIS_HOST=redis-host \
+      -e JWT_SECRET=your-secret \
+      realtimemessage
+    ```
+
+    Troubleshooting
+    - If app cannot reach DB: check `SPRING_DATASOURCE_URL`, container/service `db-postgres` and `docker logs -f postgres-db`.
+    - If Redis/rate-limiting errors: check `redis-cache` container and `RedisConfig.java`.
+    - If FCM errors: validate `serviceAccountKey.json` and Firebase project settings.
+
+    Contributing
+    - Fork, create a feature branch, add tests where appropriate, open a PR with description and test results.
+
+    Extras
+    - I can generate a Postman collection or sample Postman export for the main REST endpoints and a minimal STOMP client snippet — tell me if you want that and I will add it.
 
 | Destination                              | Type    | Description                              |
 | ---------------------------------------- | ------- | ---------------------------------------- |
