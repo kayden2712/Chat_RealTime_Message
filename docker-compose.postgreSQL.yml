@@ -12,7 +12,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
-
   cache-redis:
     image: redis:alpine
     container_name: redis-cache
@@ -32,10 +31,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db-postgres:5432/${POSTGRES_DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-      
       # Redis dùng biến env
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
-      
       # JWT dùng biến env
       JWT_SECRET: ${JWT_SECRET_KEY}
 
