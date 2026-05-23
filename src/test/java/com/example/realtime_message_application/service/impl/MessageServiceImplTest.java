@@ -35,6 +35,7 @@ import com.example.realtime_message_application.repository.BanRepository;
 import com.example.realtime_message_application.repository.BlockRepository;
 import com.example.realtime_message_application.repository.ConversationRepository;
 import com.example.realtime_message_application.repository.MessageRepository;
+import com.example.realtime_message_application.component.ChatEventPublisher;
 import com.example.realtime_message_application.service.ConversationService;
 import com.example.realtime_message_application.service.ParticipantService;
 import com.example.realtime_message_application.service.UserService;
@@ -58,6 +59,8 @@ class MessageServiceImplTest {
     private BlockRepository blockRepository;
     @Mock
     private ParticipantService participantService;
+    @Mock
+    private ChatEventPublisher chatEventPublisher;
 
     @InjectMocks
     private MessageServiceImpl messageService;
@@ -153,7 +156,7 @@ class MessageServiceImplTest {
         PinMessageCommand command = new PinMessageCommand(1L, 1L, 1L);
         when(conversationRepository.existsById(1L)).thenReturn(true);
         when(userService.isExists(1L)).thenReturn(true);
-        when(banRepository.existsByConvIdAndUserId(1L, 1L)).thenReturn(true);
+        when(banRepository.existsByConvIdAndUserId(1L, 1L)).thenReturn(false);
         when(participantService.isExists(1L, 1L)).thenReturn(true);
         when(messageRepository.findById(1L)).thenReturn(Optional.of(message));
         when(conversationRepository.countNoOfPinnedMessageConv(1L)).thenReturn(5);
@@ -171,7 +174,7 @@ class MessageServiceImplTest {
         EditMessageCommand command = new EditMessageCommand(1L, 1L, 1L, "New Content");
         when(conversationRepository.existsById(1L)).thenReturn(true);
         when(userService.isExists(1L)).thenReturn(true);
-        when(banRepository.existsByConvIdAndUserId(1L, 1L)).thenReturn(true);
+        when(banRepository.existsByConvIdAndUserId(1L, 1L)).thenReturn(false);
         when(participantService.isExists(1L, 1L)).thenReturn(true);
         when(messageRepository.findByMessageIdWithDetails(1L)).thenReturn(Optional.of(message));
         when(messageMapper.toMessageResponse(message)).thenReturn(messageResponse);

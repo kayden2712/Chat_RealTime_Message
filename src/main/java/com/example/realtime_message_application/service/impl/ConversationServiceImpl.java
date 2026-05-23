@@ -31,6 +31,10 @@ import com.example.realtime_message_application.dto.conversation.UpdateConvRole;
 import com.example.realtime_message_application.dto.conversation.UpdateConvTitle;
 import com.example.realtime_message_application.enums.ConversationType;
 import com.example.realtime_message_application.enums.ParticipantRole;
+import com.example.realtime_message_application.exception.BadRequestException;
+import com.example.realtime_message_application.exception.ConflictException;
+import com.example.realtime_message_application.exception.ForbiddenException;
+import com.example.realtime_message_application.exception.ResourceNotFoundException;
 import com.example.realtime_message_application.mapper.ConversationMapper;
 import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
@@ -147,15 +151,15 @@ public class ConversationServiceImpl implements ConversationService {
         User admin = userService.getEntityByUserId(addParticipant.adminId());
 
         if (conv.getType() == ConversationType.PRIVATE) {
-            throw new RuntimeException("Can't add people to an ONE to ONE chat.");
+            throw new BadRequestException("Can't add people to an ONE to ONE chat.");
         }
 
         if (participantRepository.findByConversationAndUser(conv.getConversationId(), member.getUserId()).isPresent()) {
-            throw new RuntimeException("User is already a participant in the conversation.");
+            throw new ConflictException("User is already a participant in the conversation.");
         }
 
         if (banService.existsByConvIdAndUserId(conv.getConversationId(), member.getUserId())) {
-            throw new RuntimeException("User is banned from the conversation.");
+            throw new ForbiddenException("User is banned from the conversation.");
         }
 
         ConversationParticipant participant = ConversationParticipant.builder()
@@ -179,15 +183,15 @@ public class ConversationServiceImpl implements ConversationService {
                 removeParticipant.adminId());
 
         if (conv.getType() == ConversationType.PRIVATE) {
-            throw new RuntimeException("Can't remove people from an ONE to ONE chat.");
+            throw new BadRequestException("Can't remove people from an ONE to ONE chat.");
         }
 
         if (admin.getParticipantRole() != ParticipantRole.ADMIN) {
-            throw new RuntimeException("You are not authorized to remove people from this conversation.");
+            throw new ForbiddenException("You are not authorized to remove people from this conversation.");
         }
 
         if (member == null) {
-            throw new RuntimeException("User is not a participant in the conversation.");
+            throw new ResourceNotFoundException("User is not a participant in the conversation.");
         }
         participantRepository.delete(member);
 
@@ -200,11 +204,11 @@ public class ConversationServiceImpl implements ConversationService {
                 leaveConversation.userId());
 
         if (participant == null) {
-            throw new RuntimeException("You don't in here.");
+            throw new ForbiddenException("You don't in here.");
         }
 
         if (participant.getConversation().getType() == ConversationType.PRIVATE) {
-            throw new RuntimeException("You can't leave a private conversation.");
+            throw new BadRequestException("You can't leave a private conversation.");
         }
 
         participantRepository.delete(participant);
@@ -216,7 +220,7 @@ public class ConversationServiceImpl implements ConversationService {
         Conversation conv = getEntityByConvId(updateConvTitle.conversationId());
 
         if (conv.getType() == ConversationType.PRIVATE) {
-            throw new RuntimeException("You can't update title of a private conversation.");
+            throw new BadRequestException("You can't update title of a private conversation.");
         }
 
         conv.setTitle(updateConvTitle.title());
@@ -229,7 +233,7 @@ public class ConversationServiceImpl implements ConversationService {
         Conversation conv = getEntityByConvId(updateConvImage.getConversationId());
 
         if (conv.getType() == ConversationType.PRIVATE) {
-            throw new RuntimeException("You can't update image of a private conversation.");
+            throw new BadRequestException("You can't update image of a private conversation.");
         }
 
         if (updateConvImage.getImage() != null || !updateConvImage.getImage().isEmpty()) {
@@ -254,11 +258,11 @@ public class ConversationServiceImpl implements ConversationService {
                 updateConvRole.adminId());
 
         if (participant == null) {
-            throw new RuntimeException("Member don't in here.");
+            throw new BadRequestException("Member don't in here.");
         }
 
         if (admin.getParticipantRole() != ParticipantRole.ADMIN) {
-            throw new RuntimeException("You are not authorized to update role of people in this conversation.");
+            throw new ForbiddenException("You are not authorized to update role of people in this conversation.");
         }
 
         participant.setParticipantRole(updateConvRole.role());
@@ -270,7 +274,7 @@ public class ConversationServiceImpl implements ConversationService {
         Conversation conv = getEntityByConvId(updateConvDescription.conversationId());
 
         if (conv.getType() == ConversationType.PRIVATE) {
-            throw new RuntimeException("You can't update description of a private conversation.");
+            throw new BadRequestException("You can't update description of a private conversation.");
         }
 
         conv.setDescription(updateConvDescription.description());
@@ -283,11 +287,11 @@ public class ConversationServiceImpl implements ConversationService {
                 muteConv.userId());
 
         if (participant == null) {
-            throw new RuntimeException("You don't in here.");
+            throw new ForbiddenException("You don't in here.");
         }
 
         if (participant.isMuted()) {
-            throw new RuntimeException("You are already muted.");
+            throw new BadRequestException("You are already muted.");
         }
 
         participant.setMuted(true);
@@ -324,11 +328,11 @@ public class ConversationServiceImpl implements ConversationService {
                 unMuteConv.userId());
 
         if (participant == null) {
-            throw new RuntimeException("You don't in here.");
+            throw new ForbiddenException("You don't in here.");
         }
 
         if (!participant.isMuted()) {
-            throw new RuntimeException("You are not muted.");
+            throw new BadRequestException("You are not muted.");
         }
 
         participant.setMuted(false);
@@ -338,13 +342,13 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public ConversationResponse addOrRemoveAsArchive(ArchiveConv archive) {
         if (!conversationRespository.existsById(archive.conversationId())) {
-            throw new RuntimeException("Conversation not found");
+            throw new ResourceNotFoundException("Conversation not found");
         }
 
         ConversationParticipant participant = getEntityByConvIdAndUserId(archive.conversationId(),
                 archive.userId());
         if (participant == null) {
-            throw new RuntimeException("Only members can add this group as archived.");
+            throw new ForbiddenException("Only members can add this group as archived.");
         }
         participant.setArchived(!participant.isArchived());
         participantRepository.save(participant);
@@ -354,13 +358,13 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public ConversationResponse addOrRemoveAsFavorites(FavoriteConv favorite) {
         if (!conversationRespository.existsById(favorite.conversationId())) {
-            throw new RuntimeException("Conversation not found");
+            throw new ResourceNotFoundException("Conversation not found");
         }
 
         ConversationParticipant participant = getEntityByConvIdAndUserId(favorite.conversationId(),
                 favorite.userId());
         if (participant == null) {
-            throw new RuntimeException("Only members can add this group as favorite.");
+            throw new ForbiddenException("Only members can add this group as favorite.");
         }
         participant.setFavorite(!participant.isFavorite());
         participantRepository.save(participant);
@@ -384,7 +388,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public void enableDisappearing(Long convId, int days) {
         Conversation conversation = conversationRepository.findById(convId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
         conversation.updateDisappearingSettings(true, days);
         conversationRepository.save(conversation);
     }
@@ -392,7 +396,7 @@ public class ConversationServiceImpl implements ConversationService {
     @Override
     public void disableDisappearing(Long convId) {
         Conversation conversation = conversationRepository.findById(convId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
         conversation.updateDisappearingSettings(false, 0);
         conversationRepository.save(conversation);
     }
@@ -464,7 +468,7 @@ public class ConversationServiceImpl implements ConversationService {
     public void moderateGroup(ModerationGroupDTO command) {
 
         if (!conversationRepository.existsById(command.getConversationId())) {
-            throw new RuntimeException("Không tìm thấy cuộc hội thoại với ID: " + command.getConversationId());
+            throw new ResourceNotFoundException("Không tìm thấy cuộc hội thoại với ID: " + command.getConversationId());
         }
 
         switch (command.getAction().toUpperCase()) {
@@ -488,7 +492,7 @@ public class ConversationServiceImpl implements ConversationService {
                         command.getModeratorId(), "UNBAN"));
 
             default ->
-                throw new RuntimeException(
+                throw new BadRequestException(
                         "Hành động '" + command.getAction() + "' không hợp lệ hoặc không được hỗ trợ.");
         }
     }
@@ -517,7 +521,7 @@ public class ConversationServiceImpl implements ConversationService {
                 String avaterUrl = path.toString();
                 conv.setAvatarUrl(avaterUrl);
             } catch (IOException e) {
-                throw new RuntimeException("Failed to upload image");
+                throw new RuntimeException("Failed to upload image", e);
             }
         }
 
@@ -556,12 +560,12 @@ public class ConversationServiceImpl implements ConversationService {
 
     public Conversation getEntityByConvId(Long convId) {
         return conversationRepository.findById(convId)
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
     }
 
     public ConversationParticipant getEntityByConvIdAndUserId(Long convId, Long userId) {
         return participantRepository.findByConversationAndUser(convId, userId)
-                .orElseThrow(() -> new RuntimeException("Participant not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Participant not found"));
     }
 
     @Override
@@ -574,7 +578,7 @@ public class ConversationServiceImpl implements ConversationService {
                 .findFirst();
 
         if (receiver.isEmpty()) {
-            throw new RuntimeException("Receiver not found in the conversation.");
+            throw new ResourceNotFoundException("Receiver not found in the conversation.");
         }
 
         return receiver.get().getUserId();

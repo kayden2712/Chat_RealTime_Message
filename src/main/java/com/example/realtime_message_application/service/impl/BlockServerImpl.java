@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.realtime_message_application.dto.conversation.BlockingCommand;
 import com.example.realtime_message_application.dto.conversation.BlockingDTO;
+import com.example.realtime_message_application.exception.BadRequestException;
+import com.example.realtime_message_application.exception.ConflictException;
+import com.example.realtime_message_application.exception.ResourceNotFoundException;
 import com.example.realtime_message_application.model.Block;
 import com.example.realtime_message_application.model.User;
 import com.example.realtime_message_application.repository.BlockRepository;
@@ -25,11 +28,11 @@ public class BlockServerImpl implements BlockedService {
     public List<Block> getBlockedList(Long blockerId) {
 
         if(!userService.isExists(blockerId)){
-            throw new RuntimeException("Blocker ID is null.");
+            throw new ResourceNotFoundException("Blocker not found.");
         }
         
         if(blockRepository.existsByBlockerId(blockerId)){
-            throw new RuntimeException("Blocker ID is null.");
+            throw new BadRequestException("Blocker ID is null.");
         }
 
         List<Block> blocks = blockRepository.findAllBlockedByBlocker(blockerId);
@@ -42,14 +45,14 @@ public class BlockServerImpl implements BlockedService {
     @Override
     public void blockUser(BlockingDTO blockingDTO) {
         if (blockingDTO.blockerId() == blockingDTO.blockedId()) {
-            throw new RuntimeException("You can't block yourself.");
+            throw new BadRequestException("You can't block yourself.");
         }
 
         User blocker = userService.getEntityByUserId(blockingDTO.blockerId());
         User blocked = userService.getEntityByUserId(blockingDTO.blockedId());
 
         if (blockRepository.existsByBlockerAndBlocked(blockingDTO.blockerId(), blockingDTO.blockedId())) {
-            throw new RuntimeException(
+            throw new ConflictException(
                     "User " + blocker.getNickname() + " already blocked " + blocked.getNickname() + ".");
         }
 
@@ -63,14 +66,14 @@ public class BlockServerImpl implements BlockedService {
     @Override
     public void unblockUser(BlockingDTO blockingDTO) {
         if (blockingDTO.blockerId() == blockingDTO.blockedId()) {
-            throw new RuntimeException("You can't block yourself.");
+            throw new BadRequestException("You can't block yourself.");
         }
 
         User blocker = userService.getEntityByUserId(blockingDTO.blockerId());
         User blocked = userService.getEntityByUserId(blockingDTO.blockedId());
 
         if (!blockRepository.existsByBlockerAndBlocked(blockingDTO.blockerId(), blockingDTO.blockedId())) {
-            throw new RuntimeException(
+            throw new BadRequestException(
                     "User " + blocker.getNickname() + "has not blocked " + blocked.getNickname() + ".");
         }
 
