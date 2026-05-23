@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import com.example.realtime_message_application.dto.message.ReadReceiptCommand;
 import com.example.realtime_message_application.dto.message.ReadReceiptDTO;
 import com.example.realtime_message_application.dto.message.ReadReceiptResponse;
+import com.example.realtime_message_application.exception.ConflictException;
+import com.example.realtime_message_application.exception.ResourceNotFoundException;
 import com.example.realtime_message_application.model.Message;
 import com.example.realtime_message_application.model.ReadReceipt;
 import com.example.realtime_message_application.model.User;
@@ -36,7 +38,7 @@ public class ReadReceiptServiceImpl implements ReadReceiptService {
     @Override
     public ReadReceiptResponse markAsRead(ReadReceiptDTO command) {
         Message msg = messageRepo.findById(command.messageId())
-                .orElseThrow(() -> new RuntimeException("Message not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
         User user = userService.getEntityByUserId(command.readerId());
 
         ReadReceipt receipt = ReadReceipt.builder()
@@ -45,7 +47,7 @@ public class ReadReceiptServiceImpl implements ReadReceiptService {
                 .build();
 
         if (readReceiptRepo.existsByMessageIdAndReaderId(command.messageId(), command.readerId())) {
-            throw new RuntimeException("Already read by this user");
+            throw new ConflictException("Already read by this user");
         }
 
         return convertTResponse(readReceiptRepo.save(receipt));
@@ -54,7 +56,7 @@ public class ReadReceiptServiceImpl implements ReadReceiptService {
     @Override
     public List<ReadReceiptResponse> getReadReceipts(Long messageId) {
         if (!messageRepo.existsByMessageId(messageId)) {
-            throw new RuntimeException("Message not found");
+            throw new ResourceNotFoundException("Message not found");
         }
 
         List<ReadReceipt> receipts = readReceiptRepo.findAllReadersForMessage(messageId);

@@ -14,6 +14,8 @@ import com.example.realtime_message_application.dto.user.UserDTO;
 import com.example.realtime_message_application.dto.user.UserResponse;
 import com.example.realtime_message_application.dto.user.updateBio;
 import com.example.realtime_message_application.dto.user.updateProfilePic;
+import com.example.realtime_message_application.exception.ConflictException;
+import com.example.realtime_message_application.exception.ResourceNotFoundException;
 import com.example.realtime_message_application.mapper.UserMapper;
 import com.example.realtime_message_application.model.User;
 import com.example.realtime_message_application.repository.UserRepository;
@@ -45,7 +47,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse findByUsername(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         return convertToUserResponse(user);
     }
@@ -81,7 +83,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         userRepository.deleteById(userId);
     }
@@ -89,7 +91,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void disconnectUser(Long userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
         User user = getEntityByUserId(userId);
         user.setOnline(false);
@@ -107,7 +109,7 @@ public class UserServiceImpl implements UserService {
                 user.setProfilePic(updatePic.getFile().getBytes());
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to update profile picture");
+            throw new RuntimeException("Failed to update profile picture", e);
         }
     }
 
@@ -120,7 +122,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public User getEntityByUserId(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
     }
 
     @Override
@@ -164,14 +166,14 @@ public class UserServiceImpl implements UserService {
 
     private void validateUser(UserDTO userDTO) {
         if (userRepository.existsByUsername(userDTO.getUsername())) {
-            throw new RuntimeException("Username already exists");
+            throw new ConflictException("Username already exists");
         }
         if (userRepository.existsByPhoneNo(userDTO.getPhoneNo())) {
-            throw new RuntimeException("Phone number already exists");
+            throw new ConflictException("Phone number already exists");
         }
 
         if (userDTO.getEmail() != null && userRepository.existsByEmail(userDTO.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new ConflictException("Email already exists");
         }
     }
 

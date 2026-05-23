@@ -4,6 +4,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.realtime_message_application.dto.conversation.BanUserDTO;
 import com.example.realtime_message_application.enums.ParticipantRole;
+import com.example.realtime_message_application.exception.ConflictException;
+import com.example.realtime_message_application.exception.ForbiddenException;
+import com.example.realtime_message_application.exception.ResourceNotFoundException;
 import com.example.realtime_message_application.model.BannedUser;
 import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
@@ -25,24 +28,24 @@ public class BanServiceImpl implements BanService {
     @Override
     public BannedUser findByConversationAndUser(Long conversationId, Long userId) {
         return banRepo.findByConvIdAndUserId(conversationId, userId)
-                .orElseThrow(() -> new RuntimeException("User not banned"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not banned"));
     }
 
     @Override
     public void banUser(BanUserDTO banUserDTO) {
         Conversation conversation = conversationRepo.findById(banUserDTO.conversationId())
-                .orElseThrow(() -> new RuntimeException("Conversation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
         ConversationParticipant targetUser = getParticipant(conversation.getConversationId(), banUserDTO.targetUserId());
         ConversationParticipant admin = getParticipant(conversation.getConversationId(), banUserDTO.adminId());
 
         if (admin.getParticipantRole() != ParticipantRole.ADMIN) {
-            throw new RuntimeException("Admins can only ban users.");
+            throw new ForbiddenException("Admins can only ban users.");
         }
         if (targetUser == null) {
-            throw new RuntimeException("User not found.");
+            throw new ResourceNotFoundException("User not found.");
         }
         if (banRepo.existsByConvIdAndUserId(banUserDTO.conversationId(), banUserDTO.targetUserId())) {
-            throw new RuntimeException("User already banned from this conversation.");
+            throw new ConflictException("User already banned from this conversation.");
         }
 
         // delete participant
@@ -64,20 +67,20 @@ public class BanServiceImpl implements BanService {
 
         ConversationParticipant admin = getParticipant(banUserDTO.conversationId(), banUserDTO.adminId());
         if (admin.getParticipantRole() != ParticipantRole.ADMIN) {
-            throw new RuntimeException("Admins can only unban users.");
+            throw new ForbiddenException("Admins can only unban users.");
         }
         banRepo.delete(bannedUser);
     }
 
     private BannedUser getBannedUser(Long conversationId, Long userId) {
         return banRepo.findByConvIdAndUserId(conversationId, userId)
-                .orElseThrow(() -> new RuntimeException("User not banned"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not banned"));
     }
 
     private ConversationParticipant getParticipant(Long conversationId, Long userId) {
         return participantRepo.findByConversationAndUser(
                 conversationId, userId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
     }
 
     @Override

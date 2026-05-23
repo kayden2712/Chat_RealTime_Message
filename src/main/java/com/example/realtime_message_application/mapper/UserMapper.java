@@ -38,7 +38,7 @@ public class UserMapper {
                 target.setImageType(file.getContentType());
                 target.setProfilePicName(file.getOriginalFilename());
             } catch (Exception e) {
-                throw new RuntimeException("Error while uploading profile pic: " + e.getMessage());
+                throw new RuntimeException("Error while uploading profile pic: " + e.getMessage(), e);
             }
 
         }
