@@ -31,6 +31,10 @@ import com.example.realtime_message_application.dto.message.PinMessage;
 import com.example.realtime_message_application.dto.message.RestoreMessage;
 import com.example.realtime_message_application.enums.ConversationType;
 import com.example.realtime_message_application.enums.MessageType;
+import com.example.realtime_message_application.exception.BadRequestException;
+import com.example.realtime_message_application.exception.ConflictException;
+import com.example.realtime_message_application.exception.ForbiddenException;
+import com.example.realtime_message_application.exception.ResourceNotFoundException;
 import com.example.realtime_message_application.mapper.MessageMapper;
 import com.example.realtime_message_application.model.Conversation;
 import com.example.realtime_message_application.model.ConversationParticipant;
@@ -64,7 +68,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message getMessageById(Long messageId) {
-        return messageRepository.findById(messageId).orElseThrow(() -> new RuntimeException("Message not found"));
+        return messageRepository.findById(messageId).orElseThrow(() -> new ResourceNotFoundException("Message not found"));
     }
 
     @Override
@@ -76,7 +80,7 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Message getMessageByIdWithDetails(Long messageId) {
         Message message = messageRepository.findByMessageIdWithDetails(messageId)
-                .orElseThrow(() -> new RuntimeException("Message not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Message not found"));
         message.setReplies(new HashSet<>(message.getReplies())); // ép Hibernate phải tải dữ liệu từ database ngay lập tuc
         return message;
     }
@@ -112,7 +116,7 @@ public class MessageServiceImpl implements MessageService {
         validateUser(restoreMessage.userId());
 
         if (!deleted.getSender().getUserId().equals(restoreMessage.userId())) {
-            throw new RuntimeException("You are not the sender of this message");
+            throw new ForbiddenException("You are not the sender of this message");
         }
 
         deleted.setDeleted(false);
@@ -136,7 +140,7 @@ public class MessageServiceImpl implements MessageService {
         validateParticipant(message.getConversation().getConversationId(), command.actorId());
 
         if (!message.getSender().getUserId().equals(command.actorId())) {
-            throw new RuntimeException("You are not the sender of this message");
+            throw new ForbiddenException("You are not the sender of this message");
         }
 
         message.setDeletedBy(message.getSender().getUsername());
@@ -156,7 +160,7 @@ public class MessageServiceImpl implements MessageService {
         validateUser(command.actorId());
 
         if (!message.getSender().getUserId().equals(command.actorId())) {
-            throw new RuntimeException("You are not the sender of this message");
+            throw new ForbiddenException("You are not the sender of this message");
         }
 
         messageRepository.permanentDeletionOfMessage(command.messageId());
@@ -186,11 +190,11 @@ public class MessageServiceImpl implements MessageService {
         Message message = getMessageById(pinMessage.messageId());
 
         if (conversationRepository.countNoOfPinnedMessageConv(pinMessage.conversationId()) > 10) {
-            throw new RuntimeException("Maximum number of pinned messages reached");
+            throw new BadRequestException("Maximum number of pinned messages reached");
         }
 
         if (message.isPinned()) {
-            throw new RuntimeException("Message is already pinned");
+            throw new ConflictException("Message is already pinned");
         }
 
         message.setPinned(true);
@@ -215,7 +219,7 @@ public class MessageServiceImpl implements MessageService {
         Message message = getMessageById(pinMessage.messageId());
 
         if (!message.isPinned()) {
-            throw new RuntimeException("Message is not pinned");
+            throw new BadRequestException("Message is not pinned");
         }
         message.setPinned(false);
         message.setPinnedBy(null);
@@ -239,15 +243,15 @@ public class MessageServiceImpl implements MessageService {
         Message message = getMessageByIdWithDetails(editMessage.messageId());
 
         if (!message.getSender().getUserId().equals(editMessage.senderId())) {
-            throw new RuntimeException("You are not the sender of this message");
+            throw new ForbiddenException("You are not the sender of this message");
         }
 
         if (message.getMessageType() != MessageType.TEXT) {
-            throw new RuntimeException("Only Text messages can be edited.");
+            throw new BadRequestException("Only Text messages can be edited.");
         }
 
         if (!message.getConversation().getConversationId().equals(editMessage.conversationId())) {
-            throw new RuntimeException("Message is not in the conversation");
+            throw new BadRequestException("Message is not in the conversation");
         }
 
         message.setContent(editMessage.newContent());
@@ -273,17 +277,17 @@ public class MessageServiceImpl implements MessageService {
         if (conversation.getType() == ConversationType.PRIVATE) {
             User otherUser = conversation.getParticipants().stream().map(ConversationParticipant::getUser)
                     .filter(u -> !u.getUserId().equals(send.senderId())).findFirst()
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
             if (blockRepository.existsByBlockerAndBlocked(otherUser.getUserId(), send.senderId())) {
-                throw new RuntimeException("You are blocked by this user");
+                throw new ForbiddenException("You are blocked by this user");
             }
             if (blockRepository.existsByBlockerAndBlocked(send.senderId(), otherUser.getUserId())) {
-                throw new RuntimeException("You have blocked this user");
+                throw new ForbiddenException("You have blocked this user");
             }
         }
 
         if (banRepository.existsByConvIdAndUserId(conversation.getConversationId(), send.senderId())) {
-            throw new RuntimeException("You are banned from this conversation");
+            throw new ForbiddenException("You are banned from this conversation");
         }
         ;
 
@@ -326,25 +330,25 @@ public class MessageServiceImpl implements MessageService {
 
     private void validateCOnversation(Long convId) {
         if (!conversationRepository.existsById(convId)) {
-            throw new RuntimeException("Conversation not found");
+            throw new ResourceNotFoundException("Conversation not found");
         }
     }
 
     private void validateBan(Long convId, Long userId) {
         if (banRepository.existsByConvIdAndUserId(convId, userId)) {
-            throw new RuntimeException("You are banned from this conversation.");
+            throw new ForbiddenException("You are banned from this conversation.");
         }
     }
 
     private void validateUser(Long userId) {
         if (!userService.isExists(userId)) {
-            throw new RuntimeException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
     }
 
     private void validateParticipant(Long convId, Long userId) {
         if (!participantService.isExists(convId, userId)) {
-            throw new RuntimeException("You are not a participant of this conversation.");
+            throw new ForbiddenException("You are not a participant of this conversation.");
         }
     }
 

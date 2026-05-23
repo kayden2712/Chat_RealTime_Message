@@ -3,6 +3,9 @@ package com.example.realtime_message_application.security;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import com.example.realtime_message_application.exception.BadRequestException;
+import com.example.realtime_message_application.exception.UnauthorizedException;
+
 public class SecurityUtils {
 
     private SecurityUtils() {
@@ -13,13 +16,13 @@ public class SecurityUtils {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
-            throw new RuntimeException("You're not authenticated");
+            throw new UnauthorizedException("You're not authenticated");
         }
 
         Object principal = auth.getPrincipal();
 
         if (!(principal instanceof CustomUserDetails customUserDetails)) {
-            throw new RuntimeException("Provide valid information to authenticate user");
+            throw new BadRequestException("Provide valid information to authenticate user");
         }
 
         return customUserDetails;
