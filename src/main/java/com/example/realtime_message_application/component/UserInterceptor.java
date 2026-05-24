@@ -19,6 +19,9 @@ public class UserInterceptor implements ChannelInterceptor {
         // Lấy bộ truy cập Header để đọc thông tin từ tin nhắn STOMP
         StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+        if (headerAccessor == null)
+            return message;
+
         // Kiểm tra xem đây có phải là yêu cầu KẾT NỐI (CONNECT)
         if (StompCommand.CONNECT.equals(headerAccessor.getCommand())) {
 

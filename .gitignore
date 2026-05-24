@@ -33,4 +33,5 @@ build/
 .vscode/
 .env
 src/main/resources/serviceAccountKey.json
-.scientific-agent-skills/
+.agents/
+/knowledge.md

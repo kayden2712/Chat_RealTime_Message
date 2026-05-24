@@ -30,7 +30,6 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
-import com.example.realtime_message_application.component.FCMInitializer;
 import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.message.ChatMessage;
 import com.example.realtime_message_application.dto.message.MessageResponse;
@@ -44,10 +43,7 @@ import com.example.realtime_message_application.repository.ConversationRepositor
 import com.example.realtime_message_application.repository.ParticipantRepository;
 import com.example.realtime_message_application.repository.UserRepository;
 import com.example.realtime_message_application.security.JwtHandshakeInterceptor;
-import com.example.realtime_message_application.security.JwtService;
 import com.example.realtime_message_application.security.SecurityUtils;
-import com.example.realtime_message_application.service.NotificationService;
-import com.example.realtime_message_application.service.PresenceService;
 import com.example.realtime_message_application.service.RateLimitingService;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -63,22 +59,10 @@ public class WebSocketIntegrationTest {
     private BlockingQueue<MessageResponse> blockingQueue;
 
     @MockBean
-    private FCMInitializer fcmInitializer;
-
-    @MockBean
     private RateLimitingService rateLimitingService;
 
     @MockBean
     private RateLimitingInterceptor rateLimitingInterceptor;
-
-    @MockBean
-    private JwtService jwtService;
-
-    @MockBean
-    private PresenceService presenceService;
-
-    @MockBean
-    private NotificationService notificationService;
 
     @MockBean
     private JwtHandshakeInterceptor jwtHandshakeInterceptor;

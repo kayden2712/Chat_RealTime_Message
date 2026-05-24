@@ -1,0 +1,171 @@
+{
+  "info": {
+    "_postman_id": "a3e9c2f1-1b6e-4d5b-9c10-redis-ws-ratelimit",
+    "name": "RealTimeMessage - Rate Limit (Redis + WebSocket)",
+    "description": "Collection để kiểm tra rate limit (Bucket4j + Redis/Redisson) trên cả REST và WebSocket STOMP của ứng dụng realtime-message.\n\n## ⚠️ Lưu ý quan trọng trước khi dùng\n\n1. **Postman Collection v2.1 KHÔNG lưu được WebSocket Request.** Item `WS - STOMP Connect (placeholder)` chỉ là bookmark URL. Bạn phải tự bấm `New → WebSocket Request`, dán `{{wsUrl}}/ws`, rồi paste các frame STOMP từ description của folder `WebSocket - STOMP Rate Limit`.\n2. **REST path là phỏng đoán** (`/api/users`, `/api/conversations`, `/api/auth/login`). Hãy mở `UserController`, `ConversationController`, AuthController của repo để verify `@RequestMapping` thực tế và sửa cho khớp.\n3. **`/app/chat.send` sẽ NPE ở `SecurityUtils.getUserId()`** vì `JwtHandshakeInterceptor` đang bị comment trong `WebsocketConfig` → không có Spring Security context. Cho mục tiêu **chỉ test rate limit** thì OK vì `RateLimitingInterceptor` chạy trước handler. Nếu muốn test full flow, hãy bật lại `JwtHandshakeInterceptor` và thêm header `Authorization: Bearer <jwt>` lúc handshake.\n\n## Cấu hình rate limit hiện tại\n- 30 token / phút / user (hoặc IP nếu chưa login).\n- WebSocket: kiểm tra trên STOMP SEND, key = `ws:user:<userId>` lấy từ header `x-User_Id` hoặc principal `login`.\n- REST: `RateLimitingFilter` đọc header `x-User_Id`, trả về HTTP 429 + `Retry-After` khi vượt.\n\n## Cách dùng\n1. Import file này + (tuỳ chọn) tạo environment với các biến `baseUrl`, `wsUrl`, `userId`, `jwtToken`.\n2. (Tuỳ chọn) chạy `Auth → Login` để lưu `jwtToken` vào env.\n3. **REST**: chạy folder `REST - Rate Limit` bằng Collection Runner với 40 iterations → request thứ 31+ trả 429 trong vòng 1 phút.\n4. **WebSocket**: tự tạo WS request tới `{{wsUrl}}/ws`, gửi tuần tự CONNECT → SUBSCRIBE → 40 × SEND. Frame SEND thứ 31 server sẽ log `User ws:user:1 is rate limited` và throw `MessagingException: Rate limiting exceeds!`.\n\n## Reset bucket nhanh giữa các lần test\nBucket trên Redis tự refill 30 token mỗi phút. Để rerun ngay không phải chờ 60s, xoá key Redis bằng `redis-cli`:\n\n```bash\nredis-cli --scan --pattern '*ws:user:1*' | xargs redis-cli del\nredis-cli --scan --pattern '*userId: 1*'  | xargs redis-cli del\nredis-cli --scan --pattern 'User:*'        | xargs redis-cli del\n```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (lấy JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"alice\",\n  \"password\": \"password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Đăng nhập để lấy JWT. Sửa endpoint cho khớp với AuthController thực tế của bạn nếu khác."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try {",
+                  "    const res = pm.response.json();",
+                  "    if (res.accessToken) pm.environment.set('jwtToken', res.accessToken);",
+                  "    if (res.userId)      pm.environment.set('userId', String(res.userId));",
+                  "    console.log('Saved jwtToken & userId');",
+                  "} catch (e) { console.log('No JSON body', e); }"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "REST - Rate Limit",
+      "description": "Chạy folder này bằng **Collection Runner** với khoảng 40 iterations. Sau request thứ 30 trong vòng 1 phút, server sẽ trả về 429.",
+      "item": [
+        {
+          "name": "GET /api/users (spam để dính 429)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const counter = (pm.environment.get('rl_counter') || 0) * 1 + 1;",
+                  "pm.environment.set('rl_counter', counter);",
+                  "console.log(`Iter #${counter} -> status ${pm.response.code}`);",
+                  "",
+                  "if (pm.response.code === 429) {",
+                  "    pm.test('Hit rate limit (429)', () => pm.expect(pm.response.code).to.eql(429));",
+                  "    pm.test('Has Retry-After header', () => pm.expect(pm.response.headers.get('Retry-After')).to.not.be.null);",
+                  "    console.log('Body:', pm.response.text());",
+                  "} else {",
+                  "    pm.test('OK before limit', () => pm.expect(pm.response.code).to.be.below(400));",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Reset counter ở iteration đầu nếu muốn",
+                  "if (!pm.environment.get('rl_counter')) pm.environment.set('rl_counter', 0);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-User_Id", "value": "{{userId}}" },
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Endpoint chỉ minh hoạ — dùng bất kỳ endpoint REST nào đi qua RateLimitingFilter. Header `x-User_Id` quyết định bucket key (nếu thiếu sẽ fallback sang IP)."
+          },
+          "response": []
+        },
+        {
+          "name": "GET /api/conversations (alt endpoint)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-User_Id", "value": "{{userId}}" },
+              { "key": "Authorization", "value": "Bearer {{jwtToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset bucket counter env (helper)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.unset('rl_counter');",
+                  "console.log('Reset rl_counter');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "WebSocket - STOMP Rate Limit",
+      "description": "Postman hỗ trợ raw WebSocket (New > WebSocket Request). Endpoint server không bật SockJS nên dùng URL `ws://...` trực tiếp.\n\n**Quy trình test:**\n1. Tạo WebSocket request mới hoặc dùng request `WS - STOMP Connect` bên dưới (nếu Postman bạn có support).\n2. URL: `{{wsUrl}}/ws` (vd `ws://localhost:8080/ws`).\n3. Connect, sau đó gửi tuần tự các frame STOMP (text). **Lưu ý**: ký tự kết thúc STOMP frame là byte NULL `\\u0000`. Trong UI Postman, gõ literal `^@` không được — copy nguyên block dưới đây (Postman sẽ giữ ký tự null khi paste).\n4. Spam SEND > 30 lần trong 1 phút để dính rate limit.\n\n**STOMP frames mẫu (mỗi frame kết thúc bằng \\u0000):**\n\n```\nCONNECT\\naccept-version:1.2\\nhost:localhost\\nlogin:1\\nx-User_Id:1\\nheart-beat:1000,1000\\n\\n\\u0000\n```\n\n```\nSUBSCRIBE\\nid:sub-0\\ndestination:/topic/conversations.1\\n\\n\\u0000\n```\n\n```\nSEND\\ndestination:/app/chat.send\\nx-User_Id:1\\ncontent-type:application/json\\n\\n{\\\"conversationId\\\":1,\\\"senderId\\\":1,\\\"content\\\":\\\"hello\\\",\\\"type\\\":\\\"TEXT\\\"}\\u0000\n```\n\n> **Đã bỏ `content-length`** — header này optional cho text frame; nếu set sai số byte server sẽ cắt body sai và frame fail trước cả khi tới rate limit check.\n\n**Kỳ vọng:**\n- 30 SEND đầu: server xử lý bình thường, broadcast về `/topic/conversations.1`.\n- SEND thứ 31 trong cùng 1 phút: server log `User ws:user:1 is rate limited`, throw `MessagingException`, kết nối có thể bị đóng. Mở terminal app để xem log.",
+      "item": [
+        {
+          "name": "WS - STOMP Connect (placeholder)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{wsUrl}}/ws",
+              "host": ["{{wsUrl}}"],
+              "path": ["ws"]
+            },
+            "description": "Postman lưu WebSocket request riêng biệt khỏi collection v2.1. Dùng request này như một bookmark URL: copy `{{wsUrl}}/ws` vào New > WebSocket Request rồi gửi các frame STOMP đã ghi trong description folder."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "wsUrl",   "value": "ws://localhost:8080",   "type": "string" },
+    { "key": "userId",  "value": "1",                      "type": "string" },
+    { "key": "jwtToken","value": "",                       "type": "string" }
+  ]
+}

@@ -24,7 +24,7 @@ public class RateLimitingInterceptor implements ChannelInterceptor {
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
-        if (headerAccessor == null)
+        if (headerAccessor == null || headerAccessor.getCommand() == null)
             return message;
 
         if (StompCommand.SEND.equals(headerAccessor.getCommand())) {

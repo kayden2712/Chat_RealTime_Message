@@ -32,21 +32,6 @@ class ParticipantControllerTest {
     @MockBean
     private ParticipantService participantService;
 
-    @MockBean
-    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
-    @MockBean
-    private RateLimitingService rateLimitingService;
-
-    @MockBean
-    private RateLimitingInterceptor rateLimitingInterceptor;
-
-    @MockBean
-    private JwtService jwtService;
-
-    @MockBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
     @Test
     void getAllParticipantsInConv_ShouldReturnList() throws Exception {
         List<ParticipantResponse> responses = List.of(

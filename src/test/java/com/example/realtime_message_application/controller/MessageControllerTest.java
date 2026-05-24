@@ -1,7 +1,6 @@
 package com.example.realtime_message_application.controller;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -14,22 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.dto.message.ChatMessage;
-import com.example.realtime_message_application.dto.message.DeleteMessage;
-import com.example.realtime_message_application.dto.message.EditMessage;
 import com.example.realtime_message_application.dto.message.MessageResponse;
-import com.example.realtime_message_application.dto.message.PinMessage;
 import com.example.realtime_message_application.dto.message.RestoreMessage;
 import com.example.realtime_message_application.model.Message;
-import com.example.realtime_message_application.security.JwtAuthenticationFilter;
-import com.example.realtime_message_application.security.JwtService;
 import com.example.realtime_message_application.service.MessageService;
-import com.example.realtime_message_application.service.RateLimitingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(MessageController.class)
@@ -41,21 +32,6 @@ class MessageControllerTest {
 
     @MockBean
     private MessageService messageService;
-
-    @MockBean
-    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
-
-    @MockBean
-    private RateLimitingService rateLimitingService;
-
-    @MockBean
-    private RateLimitingInterceptor rateLimitingInterceptor;
-
-    @MockBean
-    private JwtService jwtService;
-
-    @MockBean
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Autowired
     private ObjectMapper objectMapper;

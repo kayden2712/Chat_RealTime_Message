@@ -12,7 +12,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.component.UserInterceptor;
-import com.example.realtime_message_application.security.JwtHandshakeInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    // private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
     private final UserInterceptor userInterceptor;
     private final RateLimitingInterceptor rateLimitingInterceptor;
 
@@ -31,7 +30,8 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
         // nơi Server định nghĩa các "vùng nhận tin"
         // Cứ mỗi 1 giây, Client và Server sẽ "vẫy tay" chào nhau một cái để báo rằng
         // "Tôi vẫn còn sống"
-        config.enableSimpleBroker("/topic", "/queue").setHeartbeatValue(new long[] { 1000, 1000 }).setTaskScheduler(heartbeatScheduler());
+        config.enableSimpleBroker("/topic", "/queue").setHeartbeatValue(new long[] { 1000, 1000 })
+                .setTaskScheduler(heartbeatScheduler());
         // tiền tố cho các API gửi tin nhắn
         config.setApplicationDestinationPrefixes("/app");
         // tiền tố cho các tin nhắn gửi riêng cho từng user
@@ -41,9 +41,11 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").addInterceptors(jwtHandshakeInterceptor)
+        registry.addEndpoint("/ws")
+                // .addInterceptors(jwtHandshakeInterceptor)
                 .setAllowedOrigins("http://127.0.0.1:5500", "http://localhost:3000")
-                .withSockJS();
+                // .withSockJS()
+                ;
     }
 
     @Override

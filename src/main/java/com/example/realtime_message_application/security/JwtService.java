@@ -68,7 +68,7 @@ public class JwtService {
 
         Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
 
-        if (!authorities.isEmpty()) {
+        if (authorities != null && !authorities.isEmpty()) {
             // It extracts the user’s role from Spring Security and
             // stores it inside the JWT token without the "ROLE_" prefix.
             List<String> roles = authorities.stream()

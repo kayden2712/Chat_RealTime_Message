@@ -289,7 +289,6 @@ public class MessageServiceImpl implements MessageService {
         if (banRepository.existsByConvIdAndUserId(conversation.getConversationId(), send.senderId())) {
             throw new ForbiddenException("You are banned from this conversation");
         }
-        ;
 
         String content = (send.file() != null && !send.file().isEmpty()) ? handleFileUpload(send.file())
                 : send.content();

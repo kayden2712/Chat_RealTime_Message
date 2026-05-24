@@ -1,0 +1,1152 @@
+{
+  "info": {
+    "_postman_id": "realtime-message-api",
+    "name": "Real-Time Message Application API",
+    "description": "Postman collection for testing all Real-Time Message Application endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Seed Random Data",
+      "item": [
+        {
+          "name": "Seed Random Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/test/seed",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "test", "seed"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user"]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Find User By Username",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/username/{{username}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "username", "{{username}}"]
+            }
+          }
+        },
+        {
+          "name": "Find User By Phone Number",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/phone/{{phoneNo}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "phone", "{{phoneNo}}"]
+            }
+          }
+        },
+        {
+          "name": "Find Users By Keyword",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/keyword/{{keyword}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "keyword", "{{keyword}}"]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phoneNo\": \"+1234567890\",\n  \"bio\": \"This is my bio\",\n  \"profilePic\": \"https://example.com/pic.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/create",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "create"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"updateduser\",\n  \"email\": \"updated@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phoneNo\": \"+1234567891\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/update/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "update", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile Picture",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{userId}},\n  \"profilePicUrl\": \"https://example.com/newpic.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/update/profile-pic",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "update", "profile-pic"]
+            }
+          }
+        },
+        {
+          "name": "Update Bio",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{userId}},\n  \"bio\": \"Updated bio text\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/update/bio",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "update", "bio"]
+            }
+          }
+        },
+        {
+          "name": "Disconnect User",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/disconnect/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "disconnect", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/user/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "user", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversation Management",
+      "item": [
+        {
+          "name": "Get All Conversations (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "all"]
+            }
+          }
+        },
+        {
+          "name": "Get All Conversations By User ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "all", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Conversation By Title (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/title/{{conversationTitle}}",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "conversation",
+                "all",
+                "title",
+                "{{conversationTitle}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Conversation By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/{{conversationId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "{{conversationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"New Group Chat\",\n  \"description\": \"Group for team collaboration\",\n  \"adminId\": {{userId}},\n  \"participantIds\": [1, 2, 3],\n  \"isGroup\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/create",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get All Messages In Conversation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/messages/{{conversationId}}",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "conversation",
+                "all",
+                "messages",
+                "{{conversationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Participant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}},\n  \"role\": \"MEMBER\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/add/participant",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "add", "participant"]
+            }
+          }
+        },
+        {
+          "name": "Remove Participant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/remove/participant",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "remove", "participant"]
+            }
+          }
+        },
+        {
+          "name": "Leave Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/leave",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "leave"]
+            }
+          }
+        },
+        {
+          "name": "Update Conversation Title",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"newTitle\": \"Updated Group Title\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/update/title",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "update", "title"]
+            }
+          }
+        },
+        {
+          "name": "Update Conversation Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}},\n  \"newRole\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/update/role",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "update", "role"]
+            }
+          }
+        },
+        {
+          "name": "Update Conversation Description",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"description\": \"Updated group description\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/update/description",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "update", "description"]
+            }
+          }
+        },
+        {
+          "name": "Mute Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/mute",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "mute"]
+            }
+          }
+        },
+        {
+          "name": "Unmute Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/unmute",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "unmute"]
+            }
+          }
+        },
+        {
+          "name": "Archive Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/archive",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "archive"]
+            }
+          }
+        },
+        {
+          "name": "Add Favorite Conversation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": {{conversationId}},\n  \"userId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/favorite",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "favorite"]
+            }
+          }
+        },
+        {
+          "name": "Get All Favorite Conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/favorite/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "conversation",
+                "all",
+                "favorite",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Archived Conversations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/archive/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "conversation",
+                "all",
+                "archive",
+                "{{userId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/{{conversationId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "{{conversationId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete All Conversations By User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "conversation", "all", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete All Messages In Conversation",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/conversation/all/messages/{{conversationId}}",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "conversation",
+                "all",
+                "messages",
+                "{{conversationId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Message Management",
+      "item": [
+        {
+          "name": "Get Message By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/{{messageId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "{{messageId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Message Response By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/response/{{messageId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "response", "{{messageId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get All Messages In Conversation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/conversation/{{conversationId}}",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "messages",
+                "conversation",
+                "{{conversationId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Messages Paginated",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/conversation/{{conversationId}}/page?page=0&size=10&sort=createdAt,desc",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "messages",
+                "conversation",
+                "{{conversationId}}",
+                "page"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                },
+                {
+                  "key": "sort",
+                  "value": "createdAt,desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Send Message With File",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "conversationId",
+                  "value": "{{conversationId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "senderId",
+                  "value": "{{userId}}",
+                  "type": "text"
+                },
+                {
+                  "key": "content",
+                  "value": "Here is an attachment",
+                  "type": "text"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/send-file",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "send-file"]
+            }
+          }
+        },
+        {
+          "name": "Edit Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": {{messageId}},\n  \"conversationId\": {{conversationId}},\n  \"newContent\": \"Updated message content\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/edit?actorId={{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "edit"],
+              "query": [
+                {
+                  "key": "actorId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": {{messageId}},\n  \"conversationId\": {{conversationId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/delete?actorId={{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "delete"],
+              "query": [
+                {
+                  "key": "actorId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Message Permanently",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": {{messageId}},\n  \"conversationId\": {{conversationId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/delete-permanently?actorId={{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "delete-permanently"],
+              "query": [
+                {
+                  "key": "actorId",
+                  "value": "{{userId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Pin Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": {{messageId}},\n  \"conversationId\": {{conversationId}},\n  \"senderId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/pin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "pin"]
+            }
+          }
+        },
+        {
+          "name": "Unpin Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"messageId\": {{messageId}},\n  \"conversationId\": {{conversationId}},\n  \"senderId\": {{userId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/messages/unpin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "messages", "unpin"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Block Management",
+      "item": [
+        {
+          "name": "Block User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blockerId\": {{userId}},\n  \"blockedUserId\": {{blockedUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/block/blocking",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "block", "blocking"]
+            }
+          }
+        },
+        {
+          "name": "Unblock User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blockerId\": {{userId}},\n  \"blockedUserId\": {{blockedUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/block/unblocking",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "block", "unblocking"]
+            }
+          }
+        },
+        {
+          "name": "Get Blocked List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/block/blocked-list/{{userId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "block", "blocked-list", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ban Management",
+      "item": [
+        {
+          "name": "Ban User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adminId\": {{userId}},\n  \"bannedUserId\": {{bannedUserId}},\n  \"reason\": \"Violation of community guidelines\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ban/ban",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ban", "ban"]
+            }
+          }
+        },
+        {
+          "name": "Unban User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"adminId\": {{userId}},\n  \"bannedUserId\": {{bannedUserId}}\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/ban/unban",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "ban", "unban"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Participant Management",
+      "item": [
+        {
+          "name": "Get All Participants In Conversation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/participants/{{conversationId}}/participants",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "participants",
+                "{{conversationId}}",
+                "participants"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Admins Count In Conversation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/participants/{{conversationId}}/admins",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "participants",
+                "{{conversationId}}",
+                "admins"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Members Count In Conversation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/participants/{{conversationId}}/members",
+              "host": ["{{base_url}}"],
+              "path": [
+                "api",
+                "v1",
+                "participants",
+                "{{conversationId}}",
+                "members"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "FCM Management",
+      "item": [
+        {
+          "name": "Register FCM Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": {{userId}},\n  \"token\": \"fcm_device_token_here\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/fcm/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "fcm", "register"]
+            }
+          }
+        },
+        {
+          "name": "Unregister FCM Token",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/fcm/unregister?token=fcm_device_token_here",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "fcm", "unregister"],
+              "query": [
+                {
+                  "key": "token",
+                  "value": "fcm_device_token_here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "conversationId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "messageId",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "testuser",
+      "type": "string"
+    },
+    {
+      "key": "phoneNo",
+      "value": "+12345678900",
+      "type": "string"
+    },
+    {
+      "key": "keyword",
+      "value": "test",
+      "type": "string"
+    },
+    {
+      "key": "conversationTitle",
+      "value": "General",
+      "type": "string"
+    },
+    {
+      "key": "blockedUserId",
+      "value": "2",
+      "type": "string"
+    },
+    {
+      "key": "bannedUserId",
+      "value": "3",
+      "type": "string"
+    }
+  ]
+}
