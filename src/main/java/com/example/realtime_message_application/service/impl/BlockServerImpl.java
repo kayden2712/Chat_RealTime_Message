@@ -27,16 +27,16 @@ public class BlockServerImpl implements BlockedService {
     @Override
     public List<Block> getBlockedList(Long blockerId) {
 
-        if(!userService.isExists(blockerId)){
+        if (!userService.isExists(blockerId)) {
             throw new ResourceNotFoundException("Blocker not found.");
         }
-        
-        if(blockRepository.existsByBlockerId(blockerId)){
+
+        if (blockRepository.existsByBlockerId(blockerId)) {
             throw new BadRequestException("Blocker ID is null.");
         }
 
         List<Block> blocks = blockRepository.findAllBlockedByBlocker(blockerId);
-        
+
         return blocks;
     }
 

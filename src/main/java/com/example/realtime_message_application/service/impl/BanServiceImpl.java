@@ -35,7 +35,8 @@ public class BanServiceImpl implements BanService {
     public void banUser(BanUserDTO banUserDTO) {
         Conversation conversation = conversationRepo.findById(banUserDTO.conversationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
-        ConversationParticipant targetUser = getParticipant(conversation.getConversationId(), banUserDTO.targetUserId());
+        ConversationParticipant targetUser = getParticipant(conversation.getConversationId(),
+                banUserDTO.targetUserId());
         ConversationParticipant admin = getParticipant(conversation.getConversationId(), banUserDTO.adminId());
 
         if (admin.getParticipantRole() != ParticipantRole.ADMIN) {

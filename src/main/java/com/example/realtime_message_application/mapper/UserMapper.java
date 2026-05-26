@@ -26,7 +26,7 @@ public class UserMapper {
         target.setNickname(source.getNickname());
         target.setPhoneNo(source.getPhoneNo());
         target.setPassword(source.getPassword());
-
+        target.setEmail(source.getEmail());
         String bio = source.getBio();
         target.setBio((bio == null || bio.isBlank()) ? "Hi, I'm new here" : bio);
 

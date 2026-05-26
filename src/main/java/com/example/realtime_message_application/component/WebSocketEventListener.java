@@ -10,6 +10,7 @@ import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import com.example.realtime_message_application.service.PresenceService;
+import com.example.realtime_message_application.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ public class WebSocketEventListener {
 
     private final PresenceService presenceService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UserService userService;
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectEvent event) {
@@ -46,7 +48,11 @@ public class WebSocketEventListener {
         if (userIdStr != null) {
             Long userId = Long.valueOf(userIdStr);
             presenceService.markOffline(userId);
-
+            try {
+                userService.disconnectUser(userId);
+            } catch (Exception e) {
+                log.error("Failed to update lastSeen for user {}", userId, e);
+            }
             // Thông báo cho bạn bè là "Tôi vừa offline"
             broadcastStatus(userId, "OFFLINE");
             log.info("User disconnected: {}", userId);

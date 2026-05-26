@@ -2,7 +2,6 @@ package com.example.realtime_message_application.controller;
 
 import java.util.List;
 
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -53,11 +52,6 @@ public class UserController {
     @GetMapping("/keyword/{keyword}")
     public ResponseEntity<List<UserResponse>> findByKeyword(@PathVariable String keyword) {
         return ResponseEntity.ok(userService.findByKeyword(keyword));
-    }
-
-    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addUser(@RequestBody UserDTO userDTO) {
-        return ResponseEntity.ok(userService.addUser(userDTO));
     }
 
     @PutMapping("update/{userId}")

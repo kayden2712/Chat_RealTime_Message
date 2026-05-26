@@ -12,6 +12,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import com.example.realtime_message_application.component.RateLimitingInterceptor;
 import com.example.realtime_message_application.component.UserInterceptor;
+import com.example.realtime_message_application.security.JwtHandshakeInterceptor;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    // private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
+    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
     private final UserInterceptor userInterceptor;
     private final RateLimitingInterceptor rateLimitingInterceptor;
 
@@ -41,11 +42,17 @@ public class WebsocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+
+        // 🌐 Endpoint 1: Dành cho Front-end (giữ nguyên cấu hình cũ của bạn)
         registry.addEndpoint("/ws")
-                // .addInterceptors(jwtHandshakeInterceptor)
+                .addInterceptors(jwtHandshakeInterceptor)
                 .setAllowedOrigins("http://127.0.0.1:5500", "http://localhost:3000")
-                // .withSockJS()
-                ;
+                .withSockJS();
+
+        // 🚀 Endpoint 2: DÀNH RIÊNG CHO POSTMAN TEST (Không có hậu tố, cho phép mọi
+        // nguồn)
+        registry.addEndpoint("/ws-raw")
+                .setAllowedOrigins("*");
     }
 
     @Override

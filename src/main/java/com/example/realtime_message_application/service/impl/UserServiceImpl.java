@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     @Transactional(readOnly = true)
@@ -45,10 +47,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResponse findByUsername(String username) {
-        User user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new ResourceNotFoundException("User not found");
-        }
+        User user = userRepository.loadByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return convertToUserResponse(user);
     }
 
@@ -67,17 +67,48 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse addUser(UserDTO userDTO) {
         validateUser(userDTO);
-        User user = convertToUser(userDTO, new User());
-        userRepository.save(user);
-        return convertToUserResponse(user);
+        User user = new User();
+        userMapper.applyUser(user, userDTO);
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
+        User savedUser = userRepository.save(user);
+        return convertToUserResponse(savedUser);
     }
 
     @Override
     public UserResponse updateUser(Long userId, UserDTO userDTO) {
         User user = getEntityByUserId(userId);
-        validateUser(userDTO);
-        user = convertToUser(userDTO, user);
-        return convertToUserResponse(user);
+        validateUserForUpdate(userId, userDTO);
+
+        String oldPassword = user.getPassword();
+        userMapper.applyUser(user, userDTO);
+
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()
+                && !passwordEncoder.matches(userDTO.getPassword(), oldPassword)) {
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        } else {
+            user.setPassword(oldPassword);
+        }
+
+        User updatedUser = userRepository.save(user);
+        return convertToUserResponse(updatedUser);
+    }
+
+    private void validateUserForUpdate(Long userId, UserDTO userDTO) {
+        if (!userRepository.existsByUsername(userDTO.getUsername())) {
+            throw new ConflictException("Username already exists");
+        }
+
+        userRepository.findByPhoneNo(userDTO.getPhoneNo()).stream()
+                .filter(existingUser -> !existingUser.getUserId().equals(userId))
+                .findFirst()
+                .ifPresent(u -> {
+                    throw new ConflictException("Phone number already exists");
+                });
+
+        if (userDTO.getEmail() != null && !userRepository.existsByEmail(userDTO.getEmail())) {
+            throw new ConflictException("Email already exists");
+        }
     }
 
     @Override
@@ -90,11 +121,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void disconnectUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found");
-        }
         User user = getEntityByUserId(userId);
-        user.setOnline(false);
         user.setLastSeen(Instant.now());
         userRepository.save(user);
     }
@@ -102,11 +129,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateProfPic(updateProfilePic updatePic) {
         User user = getEntityByUserId(updatePic.getUserId());
+        // Khớp với Postman: Nếu Postman gửi URL text, gán trực tiếp:
+        // user.setProfilePicUrl(updatePic.getProfilePicUrl());
+
+        // Nếu dùng file nhị phân (Blob):
         try {
             if (updatePic.getFile() != null && !updatePic.getFile().isEmpty()) {
                 user.setProfilePicName(updatePic.getFile().getOriginalFilename());
                 user.setImageType(updatePic.getFile().getContentType());
                 user.setProfilePic(updatePic.getFile().getBytes());
+                userRepository.save(user);
             }
         } catch (IOException e) {
             throw new RuntimeException("Failed to update profile picture", e);
@@ -117,6 +149,7 @@ public class UserServiceImpl implements UserService {
     public void updateBio(updateBio userBio) {
         User user = getEntityByUserId(userBio.getUserId());
         user.setBio(userBio.getNewBio());
+        userRepository.save(user);
     }
 
     @Override
@@ -130,10 +163,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsById(userId);
     }
 
-    private User convertToUser(UserDTO userDTO, User user) {
-        return userMapper.applyUser(user, userDTO);
-    }
-
     private UserResponse convertToUserResponse(User user) {
         String lastSeen = user.isOnline() ? "Online" : lastSeenHelper(user);
         return userMapper.toResponse(user, lastSeen);
@@ -145,23 +174,23 @@ public class UserServiceImpl implements UserService {
             return "Never seen!";
 
         long minutesAgo = Duration.between(lastSeen, Instant.now()).toMinutes();
-        if (minutesAgo < 5) {
+        if (minutesAgo < 5)
             return "last seen just now";
-        } else if (minutesAgo < 60) {
+        if (minutesAgo < 60)
             return "last seen " + minutesAgo + " minutes ago";
-        } else if (minutesAgo < 720) {
-            long hoursAgo = minutesAgo / 60;
-            return "last seen " + hoursAgo + " hour ago";
-        } else if (minutesAgo < 1440) {
+        if (minutesAgo < 720)
+            return "last seen " + (minutesAgo / 60) + " hour ago";
+
+        if (minutesAgo < 1440) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a").withZone(ZoneId.systemDefault());
             return "last seen at today " + formatter.format(lastSeen);
-        } else if (minutesAgo > 1440 && minutesAgo < 2880) {
-            return "last seen yesterday";
-        } else {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d 'at' hh:mm a")
-                    .withZone(ZoneId.systemDefault());
-            return "last seen on " + formatter.format(lastSeen);
         }
+        if (minutesAgo < 2880)
+            return "last seen yesterday";
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d 'at' hh:mm a")
+                .withZone(ZoneId.systemDefault());
+        return "last seen on " + formatter.format(lastSeen);
     }
 
     private void validateUser(UserDTO userDTO) {
@@ -171,10 +200,8 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByPhoneNo(userDTO.getPhoneNo())) {
             throw new ConflictException("Phone number already exists");
         }
-
         if (userDTO.getEmail() != null && userRepository.existsByEmail(userDTO.getEmail())) {
             throw new ConflictException("Email already exists");
         }
     }
-
 }

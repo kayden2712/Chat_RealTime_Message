@@ -22,6 +22,11 @@ public class RateLimitingInterceptor implements ChannelInterceptor {
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
+        System.out.println("🚨 INTERCEPTOR ĐÃ THỨC TỈNH! Nhận được gói tin có Command là: "
+                + MessageHeaderAccessor
+                        .getAccessor(message, StompHeaderAccessor.class)
+                        .getCommand());
+
         StompHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         if (headerAccessor == null || headerAccessor.getCommand() == null)
