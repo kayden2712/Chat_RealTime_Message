@@ -20,9 +20,9 @@ public class RedisMessageSubscriber {
     private final ObjectMapper objectMapper;
 
     // Hàm này được cấu hình tự động chạy khi Redis nhận được tin nhắn
-    public void onMessage(Object message) {
+    public void onMessage(String message) {
         try {
-            RedisChatEvent chatEvent = objectMapper.convertValue(message, RedisChatEvent.class);
+        RedisChatEvent chatEvent = objectMapper.readValue(message, RedisChatEvent.class);
 
             // Giải nén payload gốc
             Object originalPayload = objectMapper.readValue(chatEvent.getPayloadJson(), Object.class);

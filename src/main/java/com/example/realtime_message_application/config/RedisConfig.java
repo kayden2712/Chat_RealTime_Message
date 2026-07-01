@@ -64,14 +64,14 @@ public class RedisConfig {
     @Bean
     public MessageListenerAdapter chatListenerAdapter(RedisMessageSubscriber subscriber) {
         MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "onMessage");
-        adapter.setSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+        adapter.setSerializer(new StringRedisSerializer());
         return adapter;
     }
 
     @Bean
     public MessageListenerAdapter notificationListenerAdapter(RedisNotificationSubscriber subscriber) {
         MessageListenerAdapter adapter = new MessageListenerAdapter(subscriber, "onNotification");
-        adapter.setSerializer(new Jackson2JsonRedisSerializer<>(Object.class));
+        adapter.setSerializer(new StringRedisSerializer());
         return adapter;
     }
 }

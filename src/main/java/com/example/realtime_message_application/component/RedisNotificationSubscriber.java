@@ -17,9 +17,9 @@ public class RedisNotificationSubscriber {
     private final ObjectMapper objectMapper;
 
     // Hàm này được cấu hình tự động chạy khi Redis nhận được tin nhắn
-    public void onNotification(Object message) {
+    public void onNotification(String message) {
         try {
-            RedisNotificationEvent notificationEvent = objectMapper.convertValue(message, RedisNotificationEvent.class);
+            RedisNotificationEvent notificationEvent = objectMapper.readValue(message, RedisNotificationEvent.class);
 
             for(Long receiverId : notificationEvent.getReceiverIds()){
                 simpMessagingTemplate.convertAndSendToUser(String.valueOf(receiverId), "/queue/notifications", notificationEvent.getPayload());
