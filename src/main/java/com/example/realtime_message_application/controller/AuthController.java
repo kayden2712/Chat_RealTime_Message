@@ -16,7 +16,7 @@ import com.example.realtime_message_application.service.UserService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -30,7 +30,7 @@ public class AuthController {
     }
 
         // @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PostMapping(value = "/register")
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
         UserResponse userResponse = userService.addUser(userDTO);
         return ResponseEntity.ok().body("User registered successfully with ID: " + userResponse.userId());

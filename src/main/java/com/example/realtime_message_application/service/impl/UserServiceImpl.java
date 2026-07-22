@@ -7,10 +7,14 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.realtime_message_application.config.RedisConfig;
 import com.example.realtime_message_application.dto.user.UserDTO;
 import com.example.realtime_message_application.dto.user.UserResponse;
 import com.example.realtime_message_application.dto.user.updateBio;
@@ -40,12 +44,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisConfig.CACHE_USERS, key = "#userId")
     public UserResponse getUserById(Long userId) {
         return convertToUserResponse(getEntityByUserId(userId));
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisConfig.CACHE_USER_BY_NAME, key = "#username")
     public UserResponse findByUsername(String username) {
         User user = userRepository.loadByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -76,6 +82,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_USERS, key = "#userId"),
+        @CacheEvict(value = RedisConfig.CACHE_USER_BY_NAME, allEntries = true)
+    })
     public UserResponse updateUser(Long userId, UserDTO userDTO) {
         User user = getEntityByUserId(userId);
         validateUserForUpdate(userId, userDTO);
@@ -112,6 +122,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_USERS, key = "#userId"),
+        @CacheEvict(value = RedisConfig.CACHE_USER_BY_NAME, allEntries = true)
+    })
     public void deleteUserById(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User not found");
@@ -127,6 +141,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_USERS, key = "#updatePic.userId"),
+        @CacheEvict(value = RedisConfig.CACHE_USER_BY_NAME, allEntries = true)
+    })
     public void updateProfPic(updateProfilePic updatePic) {
         User user = getEntityByUserId(updatePic.getUserId());
         // Khớp với Postman: Nếu Postman gửi URL text, gán trực tiếp:
@@ -146,6 +164,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_USERS, key = "#userBio.userId"),
+        @CacheEvict(value = RedisConfig.CACHE_USER_BY_NAME, allEntries = true)
+    })
     public void updateBio(updateBio userBio) {
         User user = getEntityByUserId(userBio.getUserId());
         user.setBio(userBio.getNewBio());

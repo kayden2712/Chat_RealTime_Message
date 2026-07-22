@@ -9,10 +9,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.example.realtime_message_application.config.RedisConfig;
 
 import com.example.realtime_message_application.dto.conversation.AddParticipant;
 import com.example.realtime_message_application.dto.conversation.ArchiveConv;
@@ -90,6 +95,7 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisConfig.CACHE_CONV_BY_USER, key = "#userId")
     public List<ConversationResponse> getAllConversationByUserId(Long userId) {
         return conversationRepository.findAllConversationsByUserId(userId).stream().map(this::toConversationResponse)
                 .toList();
@@ -103,11 +109,13 @@ public class ConversationServiceImpl implements ConversationService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = RedisConfig.CACHE_CONVERSATIONS, key = "#conversationId")
     public ConversationResponse getConversationById(Long conversationId) {
         return toConversationResponse(getEntityByConvId(conversationId));
     }
 
     @Override
+    @CacheEvict(value = {RedisConfig.CACHE_CONVERSATIONS, RedisConfig.CACHE_CONV_BY_USER}, allEntries = true)
     public ConversationResponse createConversation(ConversationDTO conversation, MultipartFile image) {
         Conversation conv = toConversation(conversation, image);
         return convertToConversationResponse(conv);
@@ -121,12 +129,17 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    @CacheEvict(value = {RedisConfig.CACHE_CONVERSATIONS, RedisConfig.CACHE_CONV_BY_USER}, allEntries = true)
     public void removeAllConversationByUserId(Long userId) {
         List<Conversation> list = conversationRepository.findAllConversationsByUserId(userId);
         conversationRepository.deleteAll(list);
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_CONVERSATIONS, key = "#conversationId"),
+        @CacheEvict(value = RedisConfig.CACHE_CONV_BY_USER, allEntries = true)
+    })
     public void removeConversationById(Long conversationId) {
         conversationRepository.deleteById(conversationId);
     }
@@ -144,6 +157,10 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_CONVERSATIONS, key = "#addParticipant.conversationId"),
+        @CacheEvict(value = RedisConfig.CACHE_CONV_BY_USER, allEntries = true)
+    })
     public ConversationResponse AddParticipantInConversation(AddParticipant addParticipant) {
 
         Conversation conv = getEntityByConvId(addParticipant.conversationId());
@@ -175,6 +192,10 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_CONVERSATIONS, key = "#removeParticipant.conversationId"),
+        @CacheEvict(value = RedisConfig.CACHE_CONV_BY_USER, allEntries = true)
+    })
     public ConversationResponse removeParticipantInConversation(RemoveParticipant removeParticipant) {
         Conversation conv = getEntityByConvId(removeParticipant.conversationId());
         ConversationParticipant member = getEntityByConvIdAndUserId(removeParticipant.conversationId(),
@@ -216,6 +237,10 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_CONVERSATIONS, key = "#updateConvTitle.conversationId"),
+        @CacheEvict(value = RedisConfig.CACHE_CONV_BY_USER, allEntries = true)
+    })
     public ConversationResponse updateConversationTitle(UpdateConvTitle updateConvTitle) {
         Conversation conv = getEntityByConvId(updateConvTitle.conversationId());
 
@@ -402,6 +427,10 @@ public class ConversationServiceImpl implements ConversationService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = RedisConfig.CACHE_CONVERSATIONS, key = "#conversationId + ':private'"),
+        @CacheEvict(value = RedisConfig.CACHE_CONV_BY_USER, allEntries = true)
+    })
     public ConversationResponse createPrivateGroup(Long userId1, Long userId2) {
 
         // SELF CONVERSATION

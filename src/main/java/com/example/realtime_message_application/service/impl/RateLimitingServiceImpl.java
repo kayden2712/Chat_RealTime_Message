@@ -36,15 +36,14 @@ public class RateLimitingServiceImpl implements RateLimitingService {
         this.proxyManager = Bucket4jRedisson.casBasedBuilder(((Redisson) redissonClient).getCommandExecutor()).build();
 
         Bandwidth limit = Bandwidth.builder()
-                .capacity(3) // Thùng chứa tối đa 5 Token
-                .refillGreedy(3, Duration.ofMinutes(1)) // Mỗi phút nạp lại 5 Token
-                .initialTokens(3) // Khởi tạo với 5 Token
+                .capacity(5) // Thùng chứa tối đa 5 Token
+                .refillGreedy(5, Duration.ofMinutes(1)) // Mỗi phút nạp lại 5 Token
+                .initialTokens(5) // Khởi tạo với 5 Token
                 .build();
 
         this.bucketConfig = () -> BucketConfiguration.builder()
                 .addLimit(limit)
-                .build();
-    }
+                .build();    }
 
     @Override
     public Bucket createDefaultBucket() {

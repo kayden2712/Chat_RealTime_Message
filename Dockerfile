@@ -1,15 +1,29 @@
-# Bước 1: Sử dụng JRE gọn nhẹ để chạy ứng dụng (Alpine giúp giảm kích thước image)
-FROM eclipse-temurin:21-jre-alpine
-
-# Bước 2: Thiết lập thư mục làm việc trong container
+# ==========================================
+# STAGE 1: Build file JAR từ mã nguồn
+# ==========================================
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 
-# Bước 3: Copy file jar đã build từ máy host vào container
-# Lưu ý: Bạn cần chạy lệnh 'mvn clean package' trước khi build docker
-COPY target/*.jar app.jar
+# Copy pom.xml và tải trước các dependency (giúp cache build nhanh hơn)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
 
-# Bước 4: Mở cổng 8080 cho ứng dụng
+# Copy toàn bộ mã nguồn và build dự án
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# ==========================================
+# STAGE 2: Chạy ứng dụng bằng JRE Alpine gọn nhẹ
+# ==========================================
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Copy file jar được tạo ra từ STAGE 1 sang STAGE 2
+COPY --from=builder /app/target/*.jar app.jar
+
+# Giới hạn RAM JVM cho gói Koyeb Free (512MB RAM) tránh bị đập crash app (OOM)
+ENV JAVA_OPTS="-Xms128m -Xmx300m"
+
 EXPOSE 8080
 
-# Bước 5: Lệnh thực thi ứng dụng
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
