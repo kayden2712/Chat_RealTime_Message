@@ -60,4 +60,4 @@ databases:
   - name: chat-postgres-db
     plan: free          # Free 90 ngày, sau đó cần upgrade hoặc tạo lại
     databaseName: realtimemessage
-    user: postgres
+    user: chatuser
