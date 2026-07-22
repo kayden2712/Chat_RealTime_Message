@@ -21,9 +21,11 @@ WORKDIR /app
 # Copy file jar được tạo ra từ STAGE 1 sang STAGE 2
 COPY --from=builder /app/target/*.jar app.jar
 
-# Giới hạn RAM JVM cho gói Koyeb Free (512MB RAM) tránh bị đập crash app (OOM)
-ENV JAVA_OPTS="-Xms128m -Xmx300m"
+# Giới hạn RAM JVM cho Render Free (512MB RAM) tránh OOM
+# Render inject PORT env tự động, Spring Boot đọc qua server.port=${PORT:8080}
+ENV JAVA_OPTS="-Xms128m -Xmx350m -XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0"
 
+# Render sẽ override PORT, không hardcode
 EXPOSE 8080
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

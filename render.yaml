@@ -1,0 +1,63 @@
+# =============================================================
+# Render Infrastructure as Code - render.yaml
+# Docs: https://render.com/docs/infrastructure-as-code
+# =============================================================
+# Cách dùng:
+#   1. Commit file này lên GitHub
+#   2. Vào Render Dashboard → New → Blueprint
+#   3. Connect repo và Render sẽ tự tạo services
+
+services:
+  # ─────────────────────────────────────────
+  # Web Service: Spring Boot App (Docker)
+  # ─────────────────────────────────────────
+  - type: web
+    name: chat-realtime-message
+    runtime: docker
+    plan: free          # Đổi thành "starter" ($7/tháng) để không bị ngủ
+
+    # Health check để Render biết app đã sẵn sàng
+    healthCheckPath: /actuator/health
+
+    envVars:
+      # ── Database ──────────────────────────────
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: chat-postgres-db
+          property: connectionString
+
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: chat-postgres-db
+          property: user
+
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: chat-postgres-db
+          property: password
+
+      # ── Redis (Upstash) ───────────────────────
+      # Điền REDIS_URL sau khi tạo Upstash Redis tại https://upstash.com
+      # Format: rediss://default:<password>@<host>:<port>
+      - key: REDIS_URL
+        sync: false     # Nhập thủ công trên Render Dashboard
+
+      # ── JWT ───────────────────────────────────
+      - key: JWT_SECRET
+        generateValue: true   # Render tự sinh random secret an toàn
+
+      # ── Firebase ──────────────────────────────
+      # Encode serviceAccountKey.json thành base64 rồi paste vào Render Dashboard:
+      #   Linux/Mac: base64 -w 0 serviceAccountKey.json
+      #   Windows:   [Convert]::ToBase64String([IO.File]::ReadAllBytes("serviceAccountKey.json"))
+      - key: FIREBASE_CREDENTIALS_BASE64
+        sync: false     # Nhập thủ công trên Render Dashboard
+
+# ─────────────────────────────────────────
+# PostgreSQL Managed Database
+# ─────────────────────────────────────────
+databases:
+  - name: chat-postgres-db
+    plan: free          # Free 90 ngày, sau đó cần upgrade hoặc tạo lại
+    databaseName: realtimemessage
+    user: postgres
