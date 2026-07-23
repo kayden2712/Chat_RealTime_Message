@@ -24,11 +24,21 @@ services:
       - key: SPRING_PROFILES_ACTIVE
         value: render       # Sử dụng application-render.properties
 
-      # ── Database ──────────────────────────────
-      - key: SPRING_DATASOURCE_URL
+      # ── Database ──
+      - key: DB_HOST
         fromDatabase:
           name: chat-postgres-db
-          property: connectionString
+          property: host
+
+      - key: DB_PORT
+        fromDatabase:
+          name: chat-postgres-db
+          property: port
+
+      - key: DB_NAME
+        fromDatabase:
+          name: chat-postgres-db
+          property: database
 
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
