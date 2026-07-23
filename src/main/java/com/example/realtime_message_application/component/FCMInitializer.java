@@ -20,15 +20,9 @@ import jakarta.annotation.PostConstruct;
 @org.springframework.context.annotation.Profile("!test")
 public class FCMInitializer {
 
-    @Value("${app.firebase-configuration-file}")
+    @Value("${app.firebase-configuration-file:serviceAccountKey.json}")
     String firebaseConfigPath;
 
-    /**
-     * Khi deploy lên Render (hoặc cloud), set biến môi trường FIREBASE_CREDENTIALS_BASE64
-     * bằng cách encode file serviceAccountKey.json thành base64:
-     *   base64 -w 0 serviceAccountKey.json
-     * Nếu biến này rỗng, sẽ fallback về đọc file JSON từ classpath (dùng local dev).
-     */
     @Value("${app.firebase-credentials-base64:}")
     String firebaseCredentialsBase64;
 
@@ -36,8 +30,7 @@ public class FCMInitializer {
 
     @PostConstruct
     public void initialize() {
-        try {
-            InputStream credentialsStream = resolveCredentials();
+        try (InputStream credentialsStream = resolveCredentials()) {
             if (credentialsStream == null) {
                 logger.warn("Firebase credentials không tìm thấy. Bỏ qua khởi tạo Firebase.");
                 return;
@@ -58,27 +51,37 @@ public class FCMInitializer {
         }
     }
 
-    /**
-     * Ưu tiên đọc từ biến môi trường base64 (cho Render/cloud deployment).
-     * Fallback về file classpath (cho local development).
-     */
     private InputStream resolveCredentials() {
-        // Ưu tiên 1: FIREBASE_CREDENTIALS_BASE64 env var (Render deployment)
+        // 1. Check Base64 Environment Variable (Render / Cloud)
         if (firebaseCredentialsBase64 != null && !firebaseCredentialsBase64.isBlank()) {
             logger.info("Đọc Firebase credentials từ biến môi trường base64.");
-            byte[] decodedBytes = Base64.getDecoder().decode(firebaseCredentialsBase64.trim());
-            return new ByteArrayInputStream(decodedBytes);
+            try {
+                // Remove whitespaces and newlines that often get introduced in env vars
+                String cleanBase64 = firebaseCredentialsBase64.replaceAll("\\s+", "");
+                byte[] decodedBytes = Base64.getDecoder().decode(cleanBase64);
+                return new ByteArrayInputStream(decodedBytes);
+            } catch (IllegalArgumentException e) {
+                logger.error("Biến môi trường FIREBASE_CREDENTIALS_BASE64 không đúng định dạng Base64!", e);
+                return null;
+            }
         }
 
-        // Ưu tiên 2: File JSON từ classpath (local development)
+        // 2. Fallback to Classpath File (Local Development)
         try {
+            if (firebaseConfigPath == null || firebaseConfigPath.isBlank()) {
+                logger.warn("app.firebase-configuration-file chưa được cấu hình.");
+                return null;
+            }
+
             ClassPathResource resource = new ClassPathResource(firebaseConfigPath);
             if (resource.exists()) {
                 logger.info("Đọc Firebase credentials từ file: {}", firebaseConfigPath);
                 return resource.getInputStream();
+            } else {
+                logger.warn("File không tồn tại trên classpath: {}", firebaseConfigPath);
             }
         } catch (Exception e) {
-            logger.warn("Không tìm thấy file Firebase credentials: {}", firebaseConfigPath);
+            logger.warn("Không thể đọc file Firebase credentials: {}", firebaseConfigPath, e);
         }
 
         return null;
