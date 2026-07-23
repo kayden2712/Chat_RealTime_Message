@@ -20,6 +20,10 @@ services:
     healthCheckPath: /actuator/health
 
     envVars:
+      # ── Spring Profile ────────────────────────
+      - key: SPRING_PROFILES_ACTIVE
+        value: render       # Sử dụng application-render.properties
+
       # ── Database ──────────────────────────────
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
@@ -52,6 +56,12 @@ services:
       #   Windows:   [Convert]::ToBase64String([IO.File]::ReadAllBytes("serviceAccountKey.json"))
       - key: FIREBASE_CREDENTIALS_BASE64
         sync: false     # Nhập thủ công trên Render Dashboard
+
+      # ── CORS (Cross-Origin Resource Sharing) ──
+      # Điền domain(s) của frontend được phép gọi API (ngăn CORS error)
+      # Format: https://domain1.com,https://domain2.com
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false     # Nhập thủ công: https://your-frontend.onrender.com
 
 # ─────────────────────────────────────────
 # PostgreSQL Managed Database
