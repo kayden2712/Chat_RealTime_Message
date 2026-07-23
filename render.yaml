@@ -15,6 +15,7 @@ services:
     name: chat-realtime-message
     runtime: docker
     plan: free          # Đổi thành "starter" ($7/tháng) để không bị ngủ
+    region: oregon      # PHẢI trùng region với chat-postgres-db để dùng internal network
 
     # Health check để Render biết app đã sẵn sàng
     healthCheckPath: /actuator/health
@@ -75,5 +76,6 @@ services:
 databases:
   - name: chat-postgres-db
     plan: free          # Free 90 ngày, sau đó cần upgrade hoặc tạo lại
+    region: oregon
     databaseName: realtimemessage
     user: chatuser
