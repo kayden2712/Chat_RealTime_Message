@@ -20,10 +20,6 @@ services:
     healthCheckPath: /actuator/health
 
     envVars:
-      # ── Spring Profile ────────────────────────
-      - key: SPRING_PROFILES_ACTIVE
-        value: render       # Sử dụng application-render.properties
-
       # ── Database ──
       - key: DB_HOST
         fromDatabase:
